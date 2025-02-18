@@ -86,45 +86,45 @@
 
   services.nginx = {
     virtualHosts = {
-      "watch.chengeric.com" = {
+      "watch.orther.dev" = {
         forceSSL = true;
-        useACMEHost = "chengeric.com";
+        useACMEHost = "orther.dev";
         locations."/" = {
           recommendedProxySettings = true;
           proxyPass = "http://127.0.0.1:8096";
         };
       };
 
-      "prowlarr.chengeric.com" = {
+      "prowlarr.orther.dev" = {
         forceSSL = true;
-        useACMEHost = "chengeric.com";
+        useACMEHost = "orther.dev";
         locations."/" = {
           recommendedProxySettings = true;
           proxyPass = "http://127.0.0.1:9696";
         };
       };
 
-      "radarr.chengeric.com" = {
+      "radarr.orther.dev" = {
         forceSSL = true;
-        useACMEHost = "chengeric.com";
+        useACMEHost = "orther.dev";
         locations."/" = {
           recommendedProxySettings = true;
           proxyPass = "http://127.0.0.1:7878";
         };
       };
 
-      "sonarr.chengeric.com" = {
+      "sonarr.orther.dev" = {
         forceSSL = true;
-        useACMEHost = "chengeric.com";
+        useACMEHost = "orther.dev";
         locations."/" = {
           recommendedProxySettings = true;
           proxyPass = "http://127.0.0.1:8989";
         };
       };
 
-      "transmission.chengeric.com" = {
+      "transmission.orther.dev" = {
         forceSSL = true;
-        useACMEHost = "chengeric.com";
+        useACMEHost = "orther.dev";
         locations."/" = {
           proxyPass = "http://127.0.0.1:9091";
         };

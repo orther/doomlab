@@ -110,6 +110,11 @@
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/svr3chng/configuration.nix];
       };
+
+      zinc = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [./machines/zinc/configuration.nix];
+      };
     };
   };
 }

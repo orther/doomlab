@@ -66,9 +66,9 @@
 
   services.nginx = {
     virtualHosts = {
-      "scrypted.chengeric.com" = {
+      "scrypted.orther.dev" = {
         forceSSL = true;
-        useACMEHost = "chengeric.com";
+        useACMEHost = "orther.dev";
         locations."/" = {
           recommendedProxySettings = true;
           proxyPass = "https://127.0.0.1:10443";

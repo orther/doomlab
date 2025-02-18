@@ -16,10 +16,10 @@
   };
 
   programs.git = {
-    userName = "Eric Cheng";
-    userEmail = "eric@chengeric.com";
+    userName = "Brandon Orther";
+    userEmail = "brandon@orther.dev";
     signing = {
-      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIkcgwjYMHqUDnx0JIOSXQ/TN80KEaFvvUWA2qH1AHFC";
+      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvJx1pyQwQVPPdXlqhJEtUlKyVr4HbZvgbjZ96t75Re";
       signByDefault = true;
     };
     extraConfig = {

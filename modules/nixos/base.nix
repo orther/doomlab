@@ -47,7 +47,7 @@
     description = "orther";
     extraGroups = ["networkmanager" "wheel"];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIkcgwjYMHqUDnx0JIOSXQ/TN80KEaFvvUWA2qH1AHFC"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvJx1pyQwQVPPdXlqhJEtUlKyVr4HbZvgbjZ96t75Re"
     ];
     shell = pkgs.zsh;
     hashedPasswordFile = config.sops.secrets."user-password".path;
@@ -79,7 +79,7 @@
 
   programs.zsh.enable = true;
   security.sudo.wheelNeedsPassword = false;
-  time.timeZone = "America/New_York";
+  time.timeZone = "America/Los_Angeles";
   zramSwap.enable = true;
 
   environment.persistence."/nix/persist" = {

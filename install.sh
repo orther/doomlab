@@ -35,9 +35,9 @@ if [ "$(uname)" == "Darwin" ]; then
   echo -e "Remember to add the new host public key to sops-nix!"
 elif [ "$(uname)" == "Linux" ]; then
   # Define disk
-  DISK="/dev/nvme0n1"
-  DISK_BOOT_PARTITION="/dev/nvme0n1p1"
-  DISK_NIX_PARTITION="/dev/nvme0n1p2"
+  DISK="/dev/sda"
+  DISK_BOOT_PARTITION="/dev/sda1"
+  DISK_NIX_PARTITION="/dev/sda2"
 
   # Display warning and wait for confirmation to proceed
   echo "Linux detected"

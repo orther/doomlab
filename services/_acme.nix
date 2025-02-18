@@ -7,11 +7,11 @@
   # inspo: https://carjorvaz.com/posts/setting-up-wildcard-lets-encrypt-certificates-on-nixos/
   security.acme = {
     acceptTerms = true;
-    defaults.email = "admin+acme@chengeric.com";
+    defaults.email = "admin+acme@orther.dev";
 
-    certs."chengeric.com" = {
-      domain = "chengeric.com";
-      extraDomainNames = ["*.chengeric.com"];
+    certs."orther.dev" = {
+      domain = "orther.dev";
+      extraDomainNames = ["*.orther.dev"];
       dnsProvider = "cloudflare";
       dnsPropagationCheck = true;
       # inspo: https://go-acme.github.io/lego/dns/cloudflare/

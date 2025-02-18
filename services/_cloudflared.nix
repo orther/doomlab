@@ -28,7 +28,7 @@
         credentialsFile = config.sops.secrets."cloudflare-tunnel".path;
         default = "http_status:404";
         ingress = {
-          "watch.chengeric.com" = {
+          "watch.orther.dev" = {
             service = "http://localhost:8096";
           };
         };
@@ -44,7 +44,7 @@
       wantedBy = ["default.target"];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getExe pkgs.cloudflared} tunnel route dns 'Doomlab-01' 'watch.chengeric.com'";
+        ExecStart = "${lib.getExe pkgs.cloudflared} tunnel route dns 'Doomlab-01' 'watch.orther.dev'";
       };
     };
   };

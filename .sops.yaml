@@ -4,6 +4,7 @@ keys:
   - &svr1chng age1w4tgfu8upwhpsm76sfuwls6f2suw6teurgz740lhv49v23h2scyqfzpmq7
   - &svr2chng age15ekw2jlzavzrjhx9smej3qmwe0a9asg84lkt8qxvyxkv9ad4gc7qcjgesn
   - &svr3chng age19uv62f9stfhhlsyckmg5ll2t6c8dd4f6nytnd95ftl6v62js3fmq6g2ktk
+  - &zinc age1ek7knhpqpytxsykn486rznrz90vn0h5s6km8qkq8zxtlpcus5y4qa9htr2
 creation_rules:
   - path_regex: secrets/[^/]+(\.(yaml|json|env|ini|conf))?$
     key_groups:
@@ -13,3 +14,4 @@ creation_rules:
           - *svr1chng
           - *svr2chng
           - *svr3chng
+          - *zinc

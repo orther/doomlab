@@ -18,7 +18,7 @@
     nextcloud = {
       enable = true;
       package = pkgs.nextcloud30;
-      hostName = "cloud.chengeric.com";
+      hostName = "cloud.orther.dev";
 
       https = true;
       maxUploadSize = "16G";
@@ -63,7 +63,7 @@
       virtualHosts = {
         "${config.services.nextcloud.hostName}" = {
           forceSSL = true;
-          useACMEHost = "chengeric.com";
+          useACMEHost = "orther.dev";
         };
       };
     };
