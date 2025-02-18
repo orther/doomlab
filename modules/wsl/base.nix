@@ -5,7 +5,7 @@
 
   wsl = {
     enable = true;
-    defaultUser = "eh8";
+    defaultUser = "orther";
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -21,9 +21,9 @@
     };
   };
 
-  users.users.eh8 = {
+  users.users.orther = {
     isNormalUser = true;
-    description = "eh8";
+    description = "orther";
     shell = pkgs.zsh;
   };
 

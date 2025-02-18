@@ -24,7 +24,7 @@
   services.cloudflared = {
     enable = true;
     tunnels = {
-      "chenglab-01" = {
+      "doomlab-01" = {
         credentialsFile = config.sops.secrets."cloudflare-tunnel".path;
         default = "http_status:404";
         ingress = {
@@ -39,12 +39,12 @@
   systemd.services = {
     "cloudflared-route-tunnel" = {
       description = "Point traffic to tunnel subdomain";
-      after = ["cloudflared-tunnel-chenglab-01.service"];
-      wants = ["cloudflared-tunnel-chenglab-01.service"];
+      after = ["cloudflared-tunnel-doomlab-01.service"];
+      wants = ["cloudflared-tunnel-doomlab-01.service"];
       wantedBy = ["default.target"];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getExe pkgs.cloudflared} tunnel route dns 'Chenglab-01' 'watch.chengeric.com'";
+        ExecStart = "${lib.getExe pkgs.cloudflared} tunnel route dns 'Doomlab-01' 'watch.chengeric.com'";
       };
     };
   };

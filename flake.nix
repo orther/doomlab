@@ -1,5 +1,5 @@
 {
-  description = "chenglab";
+  description = "doomlab";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";

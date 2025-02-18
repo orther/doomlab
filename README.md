@@ -1,7 +1,7 @@
 <p align="center">
-  <img src=".github/images/background.gif" width=500 alt="chenglab" />
+  <img src=".github/images/background.gif" width=500 alt="doomlab" />
   <br>
-  <img src=".github/images/servers.jpg" alt="chenglab" width=500 style="border-radius: 12px;"/>
+  <img src=".github/images/servers.jpg" alt="doomlab" width=500 style="border-radius: 12px;"/>
   <br>
   Homelab hardware: ThinkCenter M710q Tiny, Intel i5-7500T and 8GB RAM
   <br>
@@ -10,7 +10,7 @@
 
 [![nixos 24.11](https://img.shields.io/badge/NixOS-24.11-blue.svg?&logo=NixOS&logoColor=white)](https://nixos.org)
 [![blog post](https://img.shields.io/badge/blog%20post-snazzy-purple.svg)](https://chengeric.com/homelab?gh)
-![stars](https://img.shields.io/github/stars/eh8/chenglab?logo=github&style=flat&color)
+![stars](https://img.shields.io/github/stars/orther/doomlab?logo=github&style=flat&color)
 
 ## Highlights
 
@@ -32,11 +32,11 @@ MacBook Air, and work WSL setup.
   `nix` commands
 - 🤖 `flake.lock` updated daily via GitHub Action, servers are configured to
   automatically upgrade daily via
-  [`modules/nixos/auto-update.nix`](https://github.com/eh8/chenglab/blob/main/modules/nixos/auto-update.nix)
+  [`modules/nixos/auto-update.nix`](https://github.com/orther/doomlab/blob/main/modules/nixos/auto-update.nix)
 - 🧱 Modular architecture promotes readability for me and copy-and-paste-ability
   for you
 - 📦
-  [Custom ready-made tarball and ISO](https://github.com/eh8/chenglab/releases)
+  [Custom ready-made tarball and ISO](https://github.com/orther/doomlab/releases)
   for installing NixOS-on-WSL and NixOS, respectively
 
 ## Getting started
@@ -51,7 +51,7 @@ prompt you to install my configuration.
 > You'll need to run this script as sudo or have sudo permissions.
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/eh8/chenglab/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/orther/doomlab/main/install.sh)"
 ```
 
 ### NixOS (Linux)
@@ -73,7 +73,7 @@ On Linux, _running this script from the NixOS installation ISO_ will prepare
 your system for NixOS by partitioning drives and mounting them.
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/eh8/chenglab/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/orther/doomlab/main/install.sh)"
 ```
 
 > [!TIP] 
@@ -82,7 +82,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/eh8/chenglab/main/instal
 > [Ventoy can automatically load the NixOS ISO file](https://chengeric.com/homelab/#remotely-entering-nixos-installer),
 > and you can enable connectivity by building your own custom ISO with your own
 > personal SSH key.
-> [The custom ISO released in this repo](https://github.com/eh8/chenglab/releases)
+> [The custom ISO released in this repo](https://github.com/orther/doomlab/releases)
 > is baked with my own key.
 
 ### Windows Subsystem for Linux (WSL)
@@ -94,7 +94,7 @@ wsl --install --no-distribution
 ```
 
 2. Download `nixos-wsl.tar.gz` from
-   [the latest release](https://github.com/eh8/chenglab/releases).
+   [the latest release](https://github.com/orther/doomlab/releases).
 
 3. Import the tarball into WSL:
 

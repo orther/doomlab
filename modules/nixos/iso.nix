@@ -12,7 +12,7 @@
   };
 
   programs.bash.shellAliases = {
-    install = "sudo bash -c '$(curl -fsSL https://raw.githubusercontent.com/eh8/chenglab/main/install.sh)'";
+    install = "sudo bash -c '$(curl -fsSL https://raw.githubusercontent.com/orther/doomlab/main/install.sh)'";
   };
 
   security.sudo.wheelNeedsPassword = false;

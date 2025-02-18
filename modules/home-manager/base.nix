@@ -9,10 +9,10 @@
   ];
 
   home = {
-    username = "eh8";
+    username = "orther";
     homeDirectory = lib.mkMerge [
-      (lib.mkIf pkgs.stdenv.isLinux "/home/eh8")
-      (lib.mkIf pkgs.stdenv.isDarwin "/Users/eh8")
+      (lib.mkIf pkgs.stdenv.isLinux "/home/orther")
+      (lib.mkIf pkgs.stdenv.isDarwin "/Users/orther")
     ];
     stateVersion = "23.11";
     sessionVariables = lib.mkIf pkgs.stdenv.isDarwin {

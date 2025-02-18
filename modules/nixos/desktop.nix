@@ -15,7 +15,7 @@
       "/etc/NetworkManager/system-connections"
     ];
 
-    users."eh8" = {
+    users."orther" = {
       directories = [
         "Desktop"
         "Documents"

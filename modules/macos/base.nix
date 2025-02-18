@@ -35,7 +35,7 @@
     tailscale.enable = true;
   };
 
-  users.users.eh8.home = "/Users/eh8";
+  users.users.orther.home = "/Users/orther";
 
   system = {
     startup.chime = false;

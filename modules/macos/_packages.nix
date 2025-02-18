@@ -10,7 +10,7 @@
   nix-homebrew = {
     enable = true;
     enableRosetta = true;
-    user = "eh8";
+    user = "orther";
     mutableTaps = false;
     taps = {
       "homebrew/homebrew-bundle" = inputs.homebrew-bundle;
