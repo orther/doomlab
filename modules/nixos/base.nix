@@ -50,7 +50,8 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvJx1pyQwQVPPdXlqhJEtUlKyVr4HbZvgbjZ96t75Re"
     ];
     shell = pkgs.zsh;
-    hashedPasswordFile = config.sops.secrets."user-password".path;
+    ##hashedPasswordFile = config.sops.secrets."user-password".path;
+    hashedPassword = "$6$.I/elbjtjmmIxyXT$BodUpt04WQzY3ckkyxqQpuiFhTf2orvI3R2394GlO6AOk5eQuSfDbdCRXQWDYZ0wfW6wplv4flbziG/e8mx0k.";
   };
 
   services = {
