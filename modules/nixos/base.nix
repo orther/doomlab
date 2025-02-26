@@ -5,7 +5,7 @@
   ...
 }: {
   imports = [
-    inputs.sops-nix.nixosModules.sops
+    ##inputs.sops-nix.nixosModules.sops
 
     ./_packages.nix
   ];
@@ -32,14 +32,14 @@
     };
   };
 
-  sops = {
-    defaultSopsFile = ./../../secrets/secrets.yaml;
-    age.sshKeyPaths = ["/nix/secret/initrd/ssh_host_ed25519_key"];
-    secrets."user-password".neededForUsers = true;
-    secrets."user-password" = {};
-    # inspo: https://github.com/Mic92/sops-nix/issues/427
-    gnupg.sshKeyPaths = [];
-  };
+  ##sops = {
+  ##  defaultSopsFile = ./../../secrets/secrets.yaml;
+  ##  age.sshKeyPaths = ["/nix/secret/initrd/ssh_host_ed25519_key"];
+  ##  secrets."user-password".neededForUsers = true;
+  ##  secrets."user-password" = {};
+  ##  # inspo: https://github.com/Mic92/sops-nix/issues/427
+  ##  gnupg.sshKeyPaths = [];
+  ##};
 
   users.mutableUsers = false;
   users.users.orther = {
