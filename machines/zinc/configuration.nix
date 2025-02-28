@@ -33,5 +33,10 @@
     };
   };
 
-  networking.hostName = "zinc";
+  networking = {
+    hostName = "zinc";
+    useDHCP = false;
+    interfaces.enp1s0.useDHCP = true;
+    useNetworkd = true;
+  };
 }
