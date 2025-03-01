@@ -111,6 +111,11 @@
         modules = [./machines/svr3chng/configuration.nix];
       };
 
+      noir = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [./machines/noir/configuration.nix];
+      };
+
       zinc = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/zinc/configuration.nix];
