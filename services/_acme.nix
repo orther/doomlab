@@ -7,7 +7,7 @@
   # inspo: https://carjorvaz.com/posts/setting-up-wildcard-lets-encrypt-certificates-on-nixos/
   security.acme = {
     acceptTerms = true;
-    defaults.email = "admin+acme@orther.dev";
+    defaults.email = "brandon@orther.dev";
 
     certs."orther.dev" = {
       domain = "orther.dev";

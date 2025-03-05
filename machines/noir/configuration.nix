@@ -6,7 +6,7 @@
   imports = [
     inputs.impermanence.nixosModules.impermanence
     inputs.home-manager.nixosModules.home-manager
-    #inputs.nixarr.nixosModules.default
+    inputs.nixarr.nixosModules.default
 
     ./hardware-configuration.nix
 
@@ -15,9 +15,9 @@
     ./../../modules/nixos/auto-update.nix
 
     ./../../services/tailscale.nix
-    # ./../../services/netdata.nix
+    #./../../services/netdata.nix
     #./../../services/nextcloud.nix
-    #./../../services/nixarr.nix
+    ./../../services/nixarr.nix
   ];
 
   home-manager = {

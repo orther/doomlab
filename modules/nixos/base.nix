@@ -50,14 +50,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvJx1pyQwQVPPdXlqhJEtUlKyVr4HbZvgbjZ96t75Re"
     ];
     shell = pkgs.zsh;
-    ##hashedPasswordFile = config.sops.secrets."user-password".path;
-
-    ## NOTE: Temp set pass with hash until get sops-nix working
-    ##
-    ## Below hash is response from cli: `echo "REDACTED" | mkpasswd -m SHA-512 -s`
-    ##
-    ## FYI: format of hashed password $6${SALT_HERE}${HASHED_PASSWORD_HERE}
-    hashedPassword = "$6$.I/elbjtjmmIxyXT$BodUpt04WQzY3ckkyxqQpuiFhTf2orvI3R2394GlO6AOk5eQuSfDbdCRXQWDYZ0wfW6wplv4flbziG/e8mx0k.";
+    hashedPasswordFile = config.sops.secrets."user-password".path;
   };
 
   services = {
