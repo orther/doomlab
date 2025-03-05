@@ -14,7 +14,7 @@
     ./../../modules/nixos/remote-unlock.nix
     ./../../modules/nixos/auto-update.nix
 
-    #./../../services/tailscale.nix
+    ./../../services/tailscale.nix
     # ./../../services/netdata.nix
     #./../../services/nextcloud.nix
     #./../../services/nixarr.nix
