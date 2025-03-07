@@ -70,9 +70,9 @@
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
     darwinConfigurations = {
-      mac1chng = nix-darwin.lib.darwinSystem {
+      mair = nix-darwin.lib.darwinSystem {
         specialArgs = {inherit inputs outputs;};
-        modules = [./machines/mac1chng/configuration.nix];
+        modules = [./machines/mair/configuration.nix];
       };
     };
 

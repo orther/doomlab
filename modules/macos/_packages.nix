@@ -9,7 +9,9 @@
 
   nix-homebrew = {
     enable = true;
-    enableRosetta = true;
+    # NOTE: Disabled this until I migrate M1 Ultra to use Nix
+    # enableRosetta = true;
+    enableRosetta = false;
     user = "orther";
     mutableTaps = false;
     taps = {
@@ -17,6 +19,7 @@
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-core" = inputs.homebrew-core;
     };
+    autoMigrate = true;
   };
 
   homebrew = {

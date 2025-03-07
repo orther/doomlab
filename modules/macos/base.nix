@@ -40,8 +40,8 @@
   system = {
     startup.chime = false;
     defaults = {
-      loginwindow.LoginwindowText = "If lost, contact eric@chengeric.com";
-      screencapture.location = "~/OneDrive/30-39 Hobbies/34 Photos/34.01 Screenshots";
+      loginwindow.LoginwindowText = "If lost, contact brandon@orther.dev";
+      # screencapture.location = "~/OneDrive/30-39 Hobbies/34 Photos/34.01 Screenshots";
 
       dock = {
         autohide = true;
