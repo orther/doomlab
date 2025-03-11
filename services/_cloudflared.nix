@@ -44,7 +44,7 @@
       wantedBy = ["default.target"];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getExe pkgs.cloudflared} tunnel route dns 'Doomlab-01' 'watch.orther.dev'";
+        ExecStart = "${lib.getExe pkgs.cloudflared} tunnel route dns 'doomlab-01' 'watch.orther.dev'";
       };
     };
   };
