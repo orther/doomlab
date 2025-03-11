@@ -33,10 +33,11 @@
     };
   };
 
-  networking = {
-    hostName = "noir";
-    useDHCP = false;
-    interfaces.enp2s0.useDHCP = true;
-    useNetworkd = true;
-  };
+  networking.hostName = "noir";
+  # networking = {
+  #   hostName = "noir";
+  #   useDHCP = false;
+  #   interfaces.enp2s0.useDHCP = true;
+  #   useNetworkd = true;
+  # };
 }
