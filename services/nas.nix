@@ -15,7 +15,7 @@
   };
 
   fileSystems."/mnt/docker-data" = {
-      device = "//10.4.0.50/path/to/docker-data";
+      device = "//10.4.0.50/volume1/docker-data";
       fsType = "cifs";
       options = let
         # this line prevents hanging on network split
