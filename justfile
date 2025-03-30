@@ -34,3 +34,8 @@ sopsupdate:
 
 build-iso:
   nix build .#nixosConfigurations.iso1chng.config.system.build.isoImage
+
+fix-sop-keystxt:
+  mkdir -p ~/.config/sops/age
+  sudo nix-shell --extra-experimental-features flakes -p ssh-to-age --run 'ssh-to-age -private-key -i /nix/secret/initrd/ssh_host_ed25519_key -o /home/orther/.config/sops/age/keys.txt'
+  sudo chown -R orther:users ~/.config/sops/age
