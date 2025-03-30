@@ -18,7 +18,7 @@
     ./../../services/tailscale.nix
     #./../../services/netdata.nix
     #./../../services/nextcloud.nix
-    ./../../services/nixarr.nix
+    #./../../services/nixarr.nix
   ];
 
   home-manager = {
@@ -34,11 +34,11 @@
     };
   };
 
-  networking.hostName = "noir";
-  # networking = {
-  #   hostName = "noir";
-  #   useDHCP = false;
-  #   interfaces.enp2s0.useDHCP = true;
-  #   useNetworkd = true;
-  # };
+  # networking.hostName = "noir";
+  networking = {
+    hostName = "noir";
+    useDHCP = false;
+    interfaces.enp2s0.useDHCP = true;
+    useNetworkd = true;
+  };
 }
