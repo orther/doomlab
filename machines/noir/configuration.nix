@@ -6,7 +6,7 @@
   imports = [
     inputs.impermanence.nixosModules.impermanence
     inputs.home-manager.nixosModules.home-manager
-    inputs.nixarr.nixosModules.default
+    #inputs.nixarr.nixosModules.default
 
     ./hardware-configuration.nix
 
@@ -34,11 +34,11 @@
     };
   };
 
-  # networking.hostName = "noir";
-  networking = {
-    hostName = "noir";
-    useDHCP = false;
-    interfaces.enp2s0.useDHCP = true;
-    useNetworkd = true;
-  };
+  networking.hostName = "noir";
+  #networking = {
+  #  hostName = "noir";
+  #  useDHCP = false;
+  #  interfaces.enp2s0.useDHCP = true;
+  #  useNetworkd = true;
+  #};
 }
