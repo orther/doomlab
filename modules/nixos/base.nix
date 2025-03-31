@@ -102,6 +102,28 @@
       "/etc/ssh/ssh_host_rsa_key.pub"
       "/etc/ssh/ssh_host_rsa_key"
     ];
+
+    users."orther" = {
+      directories = [
+        "git"
+
+        ".cache"
+        ".config"
+        ".local"
+        {
+          directory = ".gnupg";
+          mode = "0700";
+        }
+        {
+          directory = ".ssh";
+          mode = "0700";
+        }
+      ];
+      files = [
+        ".zsh_history"
+        #".zshrc"
+      ];
+    };
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion

@@ -30,6 +30,23 @@
         imports = [
           ./../../modules/home-manager/base.nix
         ];
+
+        programs.git = {
+          enable = true;
+          userName = "Brandon Orther";
+          userEmail = "brandon@orther.dev";
+        };
+        
+        programs.ssh = {
+          enable = true;
+          matchBlocks = {
+            "github.com" = {
+              hostname = "github.com";
+              identityFile = "~/.ssh/id_ed25519";
+            };
+            # Add more hosts as needed
+          };
+        };
       };
     };
   };
