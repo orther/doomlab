@@ -29,7 +29,12 @@
     settings = {
       experimental-features = "nix-command flakes";
       auto-optimise-store = true;
+      # Add substitutes and trusted public keys if needed
+      # substituters = [ "https://cache.nixos.org/" "https://your-cache.example.org" ];
+      # trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "your-key.example.org-1:..." ];
     };
+    # Add nixPath if necessary for older tools
+    # nixPath = [ "nixpkgs=${pkgs.path}" ];
   };
 
   sops = {
@@ -93,6 +98,8 @@
       "/var/log"
       # inspo: https://github.com/nix-community/impermanence/issues/178
       "/var/lib/nixos"
+      # Persist network manager connections if needed
+      # "/etc/NetworkManager/system-connections"
     ];
 
     files = [
@@ -105,10 +112,11 @@
 
     users."orther" = {
       directories = [
-        "git"
+        "git" # Persists /home/orther/git -> /nix/persist/home/orther/git
 
         ".cache"
         ".config"
+        ".config/nvim" # Persist Neovim config
         ".local"
         {
           directory = ".gnupg";
@@ -121,11 +129,11 @@
       ];
       files = [
         ".zsh_history"
-        #".zshrc"
+        #".zshrc" # Managed by home-manager
       ];
     };
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = "23.11";
+  system.stateVersion = "23.11"; # Keep this consistent unless intentionally upgrading state
 }

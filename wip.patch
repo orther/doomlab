@@ -1,0 +1,296 @@
+diff --git a/machines/noir/configuration.nix b/machines/noir/configuration.nix
+index c21985d..749d081 100644
+--- a/machines/noir/configuration.nix
++++ b/machines/noir/configuration.nix
+@@ -96,18 +96,18 @@
+ 
+           # Define plugin categories
+           categoryDefinitions = { pkgs, ... }: {
+-            # Plugins always loaded
++            # Plugins always loaded (or managed by lazy.nvim)
+             startupPlugins = {
+               # Core functionality category
+               core = [
+-                # Use nixCats' lazy.nvim wrapper if using luaUtils template
+-                inputs.nixCats-nvim.packages.${pkgs.system}.luaUtils.lazyNvim # Or pkgs.vimPlugins.lazy-nvim if not using wrapper
++                # Correct lazy.nvim dependency from nixpkgs
++                pkgs.vimPlugins.lazy-nvim
+                 pkgs.vimPlugins.which-key-nvim
+               ];
+               # UI elements category
+               ui = [
+                 pkgs.vimPlugins.tokyonight-nvim # Example colorscheme
+-                # Add other UI plugins like lualine, bufferline, etc.
++                # Add other UI plugins like lualine, bufferline, etc. if desired
+               ];
+               # Treesitter category
+               treesitter = [
+@@ -117,19 +117,17 @@
+               telescope = [
+                 pkgs.vimPlugins.telescope-nvim
+                 pkgs.vimPlugins.telescope-fzf-native-nvim # Optional fzf sorter
++                pkgs.vimPlugins.plenary-nvim # Telescope dependency
+               ];
+               # Git signs category
+               gitsigns = [
+                 pkgs.vimPlugins.gitsigns-nvim
+               ];
+-            };
+-
+-            # Optional plugins loaded on demand (if using lazy.nvim)
+-            optionalPlugins = {
+-              # LSP category
++              # LSP category (moved from optionalPlugins for consistency)
+               lsp = [
+-                pkgs.vimPlugins.mason-nvim
+-                pkgs.vimPlugins.mason-lspconfig-nvim
++                # Remove Mason plugins - they are handled conditionally in Lua
++                # pkgs.vimPlugins.mason-nvim
++                # pkgs.vimPlugins.mason-lspconfig-nvim
+                 pkgs.vimPlugins.nvim-lspconfig
+                 # Add completion engine like nvim-cmp and its sources
+                 pkgs.vimPlugins.nvim-cmp
+@@ -142,6 +140,11 @@
+               ];
+             };
+ 
++            # Optional plugins loaded on demand (if using lazy.nvim)
++            # Can keep this empty if lazy.nvim handles all loading based on startupPlugins
++            optionalPlugins = {
++            };
++
+             # Runtime dependencies (LSPs, formatters, linters)
+             # These are added to PATH, not Neovim's packpath
+             lspsAndRuntimeDeps = {
+@@ -154,6 +157,8 @@
+                 alejandra # Nix formatter
+                 stylua # Lua formatter
+                 shellcheck # Bash linter
++                # Add `make` if using telescope-fzf-native build step without Nix
++                make
+               ];
+             };
+           };
+@@ -170,4 +175,4 @@
+   #  interfaces.enp2s0.useDHCP = true;
+   #  useNetworkd = true;
+   #};
+-}
+\ No newline at end of file
++}
+diff --git a/machines/noir/nvim-config/init.lua b/machines/noir/nvim-config/init.lua
+index ea3850a..73da8f4 100644
+--- a/machines/noir/nvim-config/init.lua
++++ b/machines/noir/nvim-config/init.lua
+@@ -1,6 +1,7 @@
+ -- Bootstrap lazy.nvim using the nixCats wrapper
+ -- This assumes you copied the luaUtils template into ./lua/nixCatsUtils
+-local nixCatsLazy = require("lua.nixCatsUtils.lazy")
++-- Correct require path and function name
++local lazyCat = require("nixCatsUtils.lazyCat") -- Use lazyCat wrapper
+ 
+ -- Basic Neovim options (similar to kickstart)
+ vim.g.mapleader = " "
+@@ -51,9 +52,12 @@ vim.opt.wrap = false -- Disable line wrap
+ 
+ -- Setup lazy.nvim using the nixCats wrapper
+ -- It automatically detects plugins installed via Nix/nixCats
+-nixCatsLazy.setup({
++-- Correct function call: lazyCat.setup
++lazyCat.setup(nixCats.pawsible({"allPlugins", "start", "lazy.nvim" }), {
+   -- Add or override lazy.nvim plugin specs here if needed
+-  -- Plugins listed in nixCats config are automatically added
++  -- Plugins listed in nixCats config are automatically added by the wrapper if detected
++
++  -- Example: Force load Tokyonight (already in nixCats startupPlugins)
+   { "folke/tokyonight.nvim", lazy = false, priority = 1000, opts = {} },
+ 
+   -- Example: Configure WhichKey (assuming it's in nixCats config)
+@@ -76,11 +80,11 @@ nixCatsLazy.setup({
+       "nvim-lua/plenary.nvim", -- Should be added by nixCats if telescope is included
+       {
+         "nvim-telescope/telescope-fzf-native.nvim",
+-        build = "make",
+-        cond = function()
++        -- Use lazyAdd to make build conditional
++        build = require('nixCatsUtils').lazyAdd("make"),
++        cond = require('nixCatsUtils').lazyAdd(function()
+           return vim.fn.executable("make") == 1
+-        end,
+-        -- NOTE: Make sure `make` is in the build environment if using this
++        end),
+       },
+     },
+     config = function()
+@@ -112,13 +116,15 @@ nixCatsLazy.setup({
+   {
+     "nvim-treesitter/nvim-treesitter",
+     event = { "BufReadPost", "BufNewFile" },
+-    build = ":TSUpdate", -- Or handle updates via Nix
++    -- Use lazyAdd to make build conditional
++    build = require('nixCatsUtils').lazyAdd(":TSUpdate"),
+     config = function()
+       require("nvim-treesitter.configs").setup({
+         highlight = { enable = true },
+         indent = { enable = true },
+         ensure_installed = {}, -- Grammars managed by Nix
+-        auto_install = false, -- Don't auto-install
++        -- Use lazyAdd to make auto_install conditional
++        auto_install = require('nixCatsUtils').lazyAdd(true, false),
+       })
+     end,
+   },
+@@ -128,43 +134,96 @@ nixCatsLazy.setup({
+     "neovim/nvim-lspconfig",
+     event = { "BufReadPre", "BufNewFile" },
+     dependencies = {
+-      "williamboman/mason.nvim",
+-      "williamboman/mason-lspconfig.nvim",
+-      -- Add cmp plugins here if managed by lazy.nvim instead of nixCats directly
++       -- Only enable Mason plugins if NOT using nixCats
++      { "williamboman/mason.nvim", enabled = not require('nixCatsUtils').isNixCats },
++      { "williamboman/mason-lspconfig.nvim", enabled = not require('nixCatsUtils').isNixCats },
+     },
+     config = function()
+       local lspconfig = require("lspconfig")
+-      local mason = require("mason")
+-      local mason_lspconfig = require("mason-lspconfig")
++      local capabilities = vim.lsp.protocol.make_client_capabilities() -- Base capabilities
+ 
+-      mason.setup()
+-      mason_lspconfig.setup({
+-        ensure_installed = { "lua_ls", "nil_analyzer", "bashls" }, -- LSPs to ensure installed by Mason
+-      })
++      -- Make Mason setup conditional
++      if not require('nixCatsUtils').isNixCats then
++        local mason = require("mason")
++        local mason_lspconfig = require("mason-lspconfig")
++        mason.setup()
++        mason_lspconfig.setup({
++          ensure_installed = { "lua_ls", "nil_analyzer", "bashls" }, -- LSPs to ensure installed by Mason
++        })
++        mason_lspconfig.setup_handlers({
++          function(server_name)
++            -- Default handler: Setup LSP with capabilities
++             local server_opts = {
++                capabilities = capabilities -- Pass capabilities here too
++             }
++             -- Add specific settings if needed from a table, similar to below
++             if server_name == "lua_ls" then
++                 server_opts.settings = {
++                    Lua = {
++                        workspace = { checkThirdParty = false },
++                        telemetry = { enable = false },
++                    },
++                 }
++             end
++            lspconfig[server_name].setup(server_opts)
++          end,
++          -- Example override for lua_ls (can be removed if default handler is sufficient)
++          -- ["lua_ls"] = function()
++          --   lspconfig.lua_ls.setup({
++          --     capabilities = capabilities,
++          --     settings = {
++          --       Lua = {
++          --         workspace = { checkThirdParty = false },
++          --         telemetry = { enable = false },
++          --       },
++          --     },
++          --   })
++          -- end,
++        })
++      else
++        -- Setup LSPs directly if using nixCats
++        capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities) -- Add CMP capabilities only if Nix is managing CMP
+ 
+-      -- Setup LSPs
+-      mason_lspconfig.setup_handlers({
+-        function(server_name)
+-          lspconfig[server_name].setup({})
+-        end,
+-        -- Example override for lua_ls
+-        ["lua_ls"] = function()
+-          lspconfig.lua_ls.setup({
+-            settings = {
+-              Lua = {
+-                workspace = { checkThirdParty = false },
+-                telemetry = { enable = false },
+-              },
++        lspconfig.lua_ls.setup({
++          capabilities = capabilities,
++          settings = {
++            Lua = {
++              workspace = { checkThirdParty = false },
++              telemetry = { enable = false },
++              diagnostics = { globals = { 'vim', 'nixCats' } }, -- Add nixCats global
+             },
+-          })
+-        end,
++          },
++        })
++        lspconfig.nil_analyzer.setup({ capabilities = capabilities })
++        lspconfig.bashls.setup({ capabilities = capabilities })
++        -- Setup nixd if enabled by nixCats category
++        if nixCats('lsp') then -- Assuming nixd is in the lsp category
++            lspconfig.nixd.setup({ capabilities = capabilities })
++        end
++      end
++
++      -- LSP Attach Autocommand (applies to both Mason and Nix setups)
++      vim.api.nvim_create_autocmd('LspAttach', {
++          group = vim.api.nvim_create_augroup('kickstart-lsp-attach-keymaps', { clear = true }),
++          callback = function(event)
++              local client = vim.lsp.get_client_by_id(event.data.client_id)
++              local bufnr = event.buf
++
++              -- Keymaps (consider moving to a separate on_attach function)
++              vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer=bufnr, desc = "Hover symbol details" })
++              vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer=bufnr, desc = "Go to definition" })
++              vim.keymap.set("n", "gr", vim.lsp.buf.references, { buffer=bufnr, desc = "Go to references" })
++              vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer=bufnr, desc = "Code action" })
++
++              -- Add inlay hints toggle if supported
++              if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
++                  vim.keymap.set('n', '<leader>th', function()
++                      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
++                  end, { buffer = bufnr, desc = '[T]oggle Inlay [H]ints' })
++              end
++          end
+       })
+ 
+-      -- Add keymaps for LSP actions here
+-      vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover symbol details" })
+-      vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
+-      vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Go to references" })
+-      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
+     end,
+   },
+ 
+@@ -183,8 +242,13 @@ nixCatsLazy.setup({
+     config = function()
+       local cmp = require("cmp")
+       local luasnip = require("luasnip")
++      -- Make snippet loading conditional? Or assume friendly-snippets is always wanted?
++      -- If conditional, wrap this in an `if nixCats(...) or not isNixCats then ... end`
+       require("luasnip.loaders.from_vscode").lazy_load() -- Load vscode snippets
+ 
++      local capabilities = vim.lsp.protocol.make_client_capabilities()
++      capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
++
+       cmp.setup({
+         snippet = {
+           expand = function(args)
+@@ -212,9 +276,11 @@ nixCatsLazy.setup({
+ 
+   -- Add other plugin configurations here...
+ 
++}, { -- Lazy options
++  -- ui = { border = "rounded" }, -- Example lazy option
+ })
+ 
+ -- Set colorscheme
+ vim.cmd.colorscheme("tokyonight")
+ 
+-print("Neovim config loaded!")
+\ No newline at end of file
++print("Neovim config loaded!")

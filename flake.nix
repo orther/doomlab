@@ -49,6 +49,12 @@
       url = "github:nix-community/NixOS-WSL/main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Add nixCats-nvim input
+    nixCats-nvim = {
+      url = "github:BirdeeHub/nixCats-nvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -62,6 +68,8 @@
     systems = [
       "x86_64-linux"
       "aarch64-darwin"
+      # Add x86_64-darwin if needed for mair
+      "x86_64-darwin"
     ];
 
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -71,18 +79,26 @@
 
     darwinConfigurations = {
       mair = nix-darwin.lib.darwinSystem {
+        system = "x86_64-darwin"; # Specify system for mair
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/mair/configuration.nix];
+      };
+      mac1chng = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin"; # Specify system for mac1chng
+        specialArgs = {inherit inputs outputs;};
+        modules = [./machines/mac1chng/configuration.nix];
       };
     };
 
     nixosConfigurations = {
       workchng = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/workchng/configuration.nix];
       };
 
       dsk1chng = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/dsk1chng/configuration.nix];
       };
@@ -97,28 +113,40 @@
       };
 
       svr1chng = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/svr1chng/configuration.nix];
       };
 
       svr2chng = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/svr2chng/configuration.nix];
       };
 
       svr3chng = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/svr3chng/configuration.nix];
       };
 
       noir = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/noir/configuration.nix];
       };
 
       zinc = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/zinc/configuration.nix];
+      };
+
+      # Add vmnixos configuration
+      vmnixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs outputs; };
+        modules = [ ./machines/vmnixos/configuration.nix ];
       };
     };
   };
