@@ -187,23 +187,28 @@ jobs:
 
       - name: Comment PR with preview info
         uses: actions/github-script@v7
+        continue-on-error: true  # Allow this step to fail if no permissions
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🔬 Preview Environment
-              
-              A preview environment has been prepared for this PR.
-              
-              **Available machines:**
-              - NixOS: workchng, dsk1chng, svr1chng, svr2chng, svr3chng, noir, zinc, vmnixos
-              - Darwin: mair, mac1chng
-              
-              **Test commands:**
-              - \`dagger call build-nix-o-s --source=. --machine=MACHINE_NAME\`
-              - \`dagger call test-all-nix-o-s-configurations --source=.\`
-              
-              ✅ All checks must pass before merging.`
-            })
+            try {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🔬 Preview Environment
+                
+                A preview environment has been prepared for this PR.
+                
+                **Available machines:**
+                - NixOS: workchng, dsk1chng, svr1chng, svr2chng, svr3chng, noir, zinc, vmnixos
+                - Darwin: mair, mac1chng
+                
+                **Test commands:**
+                - \`dagger call get-machine-list\`
+                - \`dagger call hello --name="TEST"\`
+                
+                ✅ All checks must pass before merging.`
+              });
+            } catch (error) {
+              console.log("Could not comment on PR (likely permissions issue):", error.message);
+            }
