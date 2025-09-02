@@ -203,25 +203,25 @@ jobs:
                 repo: context.repo.repo,
                 body: `## 🔬 Dagger CI/CD Pipeline
 
-                ✅ **Preview environment ready!**
+✅ **Preview environment ready!**
 
-                **Available machines for testing:**
-                - **NixOS**: workchng, dsk1chng, svr1chng, svr2chng, svr3chng, noir, zinc, vmnixos
-                - **Darwin**: mair, mac1chng
+**Available machines for testing:**
+- **NixOS**: noir, zinc, iso1chng
+- **Darwin**: mair, stud
 
-                **Test commands you can run locally:**
-                \`\`\`bash
-                # List all available machines
-                dagger call get-machine-list
+**Test commands you can run locally:**
+\`\`\`bash
+# List all available machines
+dagger call get-machine-list
 
-                # Test basic functionality
-                dagger call hello --name="YourName"
-                \`\`\`
+# Test basic functionality
+dagger call hello --name="YourName"
+\`\`\`
 
-                **🔗 [View full pipeline results](${runUrl})**
+**🔗 [View full pipeline results](${runUrl})**
 
-                ---
-                *This comment is automatically updated by the Dagger CI/CD pipeline*`
+---
+*This comment is automatically updated by the Dagger CI/CD pipeline*`
               });
             } catch (error) {
               console.log("Could not comment on PR (likely permissions issue):", error.message);
