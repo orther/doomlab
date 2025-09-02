@@ -31,12 +31,52 @@
     settings = {
       experimental-features = "nix-command flakes";
       auto-optimise-store = true;
-      # Add substitutes and trusted public keys if needed
-      # substituters = [ "https://cache.nixos.org/" "https://your-cache.example.org" ];
-      # trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "your-key.example.org-1:..." ];
+      
+      # Configure binary caches for faster builds
+      substituters = [
+        "https://cache.nixos.org/"
+        "https://nix-community.cachix.org"
+        "https://devenv.cachix.org"
+        "https://nixpkgs-unfree.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+        "nixpkgs-unfree.cachix.org-1:hqvoInulhbV4nJ9yJOEr+4wxhDV4xq2d1DK7S6Nqlt4="
+      ];
+      
+      # Build optimization settings
+      builders-use-substitutes = true;
+      max-jobs = "auto";  # Use all available CPU cores
+      cores = 0;  # Use all available CPU cores per job
+      
+      # Increase parallel downloads for faster cache fetching
+      max-substitution-jobs = 16;
+      http-connections = 25;
+      
+      # Enable distributed builds if remote builders are available
+      # builders = "@/etc/nix/machines";
+      
+      # Trust binary caches from these users (for remote builds)
+      trusted-users = [ "root" "@wheel" ];
     };
-    # Add nixPath if necessary for older tools
-    # nixPath = [ "nixpkgs=${pkgs.path}" ];
+    
+    # Optimize build performance
+    extraOptions = ''
+      # Keep build dependencies for faster rebuilds
+      keep-outputs = true
+      keep-derivations = true
+      
+      # Enable parallel building
+      build-cores = 0
+      
+      # Increase timeout for large builds
+      stalled-download-timeout = 300
+      
+      # Enable compression for network transfers
+      compress-build-log = true
+    '';
   };
 
   sops = {
@@ -77,20 +117,56 @@
     networkmanager.enable = true;
   };
 
-  ##systemd.services.NetworkManager-wait-online.enabled = false;
-  ##systemd.services.systemd-networkd-wait-online.enable = false;
-  # inspo: https://github.com/NixOS/nixpkgs/issues/180175#issuecomment-1658731959
-  #systemd.services.NetworkManager-wait-online = {
-  #  #enable = false;
-  #  serviceConfig = {
-  #    ExecStart = ["" "${pkgs.networkmanager}/bin/nm-online -q"];
-  #  };
-  #};
+  # Disable wait-online services to speed up boot
+  # See: https://github.com/NixOS/nixpkgs/issues/180175#issuecomment-1658731959
+  systemd.services.NetworkManager-wait-online.enable = false;
+  systemd.services.systemd-networkd-wait-online.enable = false;
 
   programs.zsh.enable = true;
-  security.sudo.wheelNeedsPassword = false;
+  
+  # Implement granular sudo rules instead of passwordless access
+  security.sudo = {
+    wheelNeedsPassword = true;  # Require passwords by default
+    extraRules = [{
+      users = ["orther"];
+      commands = [
+        # Allow passwordless system management commands
+        { command = "${pkgs.systemd}/bin/systemctl restart *"; options = ["NOPASSWD"]; }
+        { command = "${pkgs.systemd}/bin/systemctl start *"; options = ["NOPASSWD"]; }
+        { command = "${pkgs.systemd}/bin/systemctl stop *"; options = ["NOPASSWD"]; }
+        { command = "${pkgs.systemd}/bin/systemctl status *"; options = ["NOPASSWD"]; }
+        { command = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch*"; options = ["NOPASSWD"]; }
+        { command = "${pkgs.nixos-rebuild}/bin/nixos-rebuild dry-build*"; options = ["NOPASSWD"]; }
+        { command = "${pkgs.nix}/bin/nix-collect-garbage*"; options = ["NOPASSWD"]; }
+      ];
+    }];
+  };
+  
+  # Enable resource limits and monitoring
+  services.resource-limits.enable = true;
+  
   time.timeZone = "America/Los_Angeles";
   zramSwap.enable = true;
+
+  # Input validation assertions
+  assertions = [
+    {
+      assertion = config.networking.hostName != "";
+      message = "networking.hostName must be set for proper system identification";
+    }
+    {
+      assertion = builtins.length config.users.users.orther.openssh.authorizedKeys.keys > 0;
+      message = "At least one SSH key must be configured for user orther";
+    }
+    {
+      assertion = config.services.openssh.enable;
+      message = "SSH service must be enabled for remote access";
+    }
+    {
+      assertion = config.networking.firewall.enable;
+      message = "Firewall must be enabled for security";
+    }
+  ];
 
   environment.persistence."/nix/persist" = {
     # Hide these mounts from the sidebar of file managers

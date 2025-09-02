@@ -72,6 +72,96 @@ fix-sops-keys:
   sudo chown -R orther:users ~/.config/sops/age
   @echo "✅ Age keys fixed!"
 
+# Manually trigger automated secrets rotation
+secrets-rotate-now:
+  @echo "🔄 Triggering manual secrets rotation..."
+  sudo systemctl start secrets-rotation.service
+  @echo "✅ Rotation initiated! Check status: just secrets-status"
+
+# Check secrets rotation service status and logs
+secrets-status:
+  @echo "📊 Secrets rotation service status:"
+  sudo systemctl status secrets-rotation.service --no-pager || true
+  @echo ""
+  @echo "📋 Recent rotation logs:"
+  sudo journalctl -u secrets-rotation.service --no-pager -n 20 || true
+  @echo ""
+  @echo "⏰ Next scheduled rotation:"
+  sudo systemctl list-timers secrets-rotation.timer --no-pager || true
+
+# Check binary cache statistics and performance
+cache-stats:
+  @echo "📊 Binary cache statistics:"
+  @echo "Cache substituters:"
+  nix show-config | grep substituters || true
+  @echo ""
+  @echo "💾 Nix store statistics:"
+  du -sh /nix/store 2>/dev/null || echo "Unable to check store size"
+  @echo ""
+  @echo "🔢 Store path count:"
+  find /nix/store -maxdepth 1 -type d | wc -l 2>/dev/null || echo "Unable to count paths"
+  @echo ""
+  @echo "⚡ Recent cache hits (from logs):"
+  journalctl -u nix-daemon --since "1 day ago" --no-pager | grep -i "substitut" | tail -5 || echo "No recent cache activity found"
+
+# Test binary cache connectivity and performance
+cache-test:
+  @echo "🧪 Testing binary cache connectivity..."
+  @echo "Testing cache.nixos.org:"
+  curl -I https://cache.nixos.org/ || echo "❌ Official cache unreachable"
+  @echo ""
+  @echo "Testing nix-community.cachix.org:"
+  curl -I https://nix-community.cachix.org/ || echo "❌ Community cache unreachable"
+  @echo ""
+  @echo "🏗️ Testing substitution with a common package:"
+  nix-store --realize /nix/store/$(nix-instantiate --eval -E 'with import <nixpkgs> {}; hello' | tr -d '"' | cut -d'-' -f1)-hello* --dry-run 2>/dev/null || echo "Test substitution complete"
+
+# Monitor system resource usage in real-time
+monitor:
+  @echo "🖥️  System Resource Monitor"
+  @echo "Press Ctrl+C to exit"
+  @echo ""
+  sudo systemd-cgtop
+
+# Show detailed service resource usage
+service-resources:
+  @echo "📊 Service Resource Usage:"
+  @echo ""
+  @echo "=== Memory Usage by Service ==="
+  systemctl status --no-pager | grep -E "(●|├|└)" | head -20 || true
+  @echo ""
+  @echo "=== Top Memory Consumers ==="
+  sudo systemctl --type=service --state=running --no-pager | head -10
+  @echo ""
+  @echo "=== Resource Limits Status ==="
+  sudo systemctl show --property=MemoryMax,CPUQuotaPerSecUSec,TasksMax nginx.service docker.service tailscaled.service sshd.service 2>/dev/null || echo "Some services not found"
+
+# View system resource monitoring logs
+resource-logs:
+  @echo "📋 System Resource Monitoring Logs:"
+  @echo ""
+  @echo "=== Recent Resource Usage ==="
+  tail -n 50 /var/log/system-resources.log 2>/dev/null || echo "No monitoring logs found yet"
+  @echo ""
+  @echo "=== System Monitor Service Status ==="
+  systemctl status system-monitor.service --no-pager || true
+
+# Show current resource usage summary
+resource-summary:
+  @echo "💾 Current System Resource Usage:"
+  @echo ""
+  @echo "=== Memory ==="
+  free -h
+  @echo ""
+  @echo "=== CPU Load ==="
+  uptime
+  @echo ""
+  @echo "=== Disk Usage ==="
+  df -h /
+  @echo ""
+  @echo "=== Top Processes ==="
+  ps aux --sort=-%mem | head -6
+
 # Legacy aliases (deprecated - use new names above)
 sopsedit: secrets-edit
 sopsrotate: secrets-rotate  
