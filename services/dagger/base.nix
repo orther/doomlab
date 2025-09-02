@@ -49,6 +49,44 @@ let
     DAGGER_CONFIG="${daggerConfig}"
     DAGGER_DIR="${cfg.workingDirectory}"
     
+    # Function to validate NFS mount availability
+    validate_nfs_storage() {
+      if [ -d "/mnt/docker-data" ]; then
+        echo "Checking NFS mount availability..."
+        
+        # Test if NFS mount is accessible
+        if mountpoint -q "/mnt/docker-data"; then
+          echo "✓ NFS mount /mnt/docker-data is available"
+          
+          # Test write access
+          if touch "/mnt/docker-data/.dagger-test" 2>/dev/null; then
+            rm -f "/mnt/docker-data/.dagger-test"
+            echo "✓ NFS mount is writable"
+          else
+            echo "✗ NFS mount is not writable"
+            return 1
+          fi
+        else
+          echo "✗ NFS mount /mnt/docker-data is not available"
+          echo "Attempting to mount NFS..."
+          mount "/mnt/docker-data" || {
+            echo "✗ Failed to mount NFS, service may not function properly"
+            return 1
+          }
+        fi
+      fi
+      return 0
+    }
+    
+    # Validate storage before service operations
+    case "$ACTION" in
+      start|restart|build)
+        validate_nfs_storage || {
+          echo "Warning: NFS storage validation failed, continuing with degraded functionality"
+        }
+        ;;
+    esac
+    
     cd "$DAGGER_DIR"
     
     case "$ACTION" in
@@ -227,8 +265,10 @@ in {
         "dagger-coordinator" = {
           description = "Dagger Service Coordinator";
           wantedBy = [ "multi-user.target" ];
-          after = [ "podman.service" "network.target" ];
-          requires = [ "podman.service" ];
+          after = [ "podman.service" "network.target" ] ++ 
+                  (optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount");
+          requires = [ "podman.service" ] ++
+                    (optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount");
           
           environment = {
             DAGGER_CACHE_DIR = "${cfg.workingDirectory}/cache";
@@ -262,8 +302,10 @@ in {
           "${serviceName}" = {
             description = "Dagger-managed ${service} service";
             wantedBy = [ "multi-user.target" ];
-            after = [ "dagger-coordinator.service" ];
-            requires = [ "dagger-coordinator.service" ];
+            after = [ "dagger-coordinator.service" ] ++ 
+                    (optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount");
+            requires = [ "dagger-coordinator.service" ] ++
+                      (optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount");
             
             serviceConfig = {
               Type = "oneshot";

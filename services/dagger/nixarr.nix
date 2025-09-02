@@ -27,9 +27,11 @@ let
   # Service definition helper
   mkDaggerService = name: serviceConfig: {
     description = "Dagger-managed ${name} service";
-    after = ["network.target" "dagger-secrets.service"];
+    after = ["network.target" "dagger-secrets.service"] ++ 
+            (optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount");
     wants = ["dagger-secrets.service"];
     wantedBy = ["multi-user.target"];
+    requires = optional (config.fileSystems ? "/mnt/docker-data") ["mnt-docker-data.mount"];
 
     environment = {
       DAGGER_CACHE_DIR = "/var/cache/dagger";

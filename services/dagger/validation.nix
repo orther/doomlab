@@ -89,6 +89,12 @@ let
       description = "Test filesystem access for Dagger services";
     };
     
+    nfs-storage = {
+      name = "NFS Storage";
+      test = "[ ! -d '/mnt/docker-data' ] || (mountpoint -q '/mnt/docker-data' && timeout 10 touch '/mnt/docker-data/.dagger-validation-test' && rm -f '/mnt/docker-data/.dagger-validation-test')";
+      description = "Test NFS storage availability and write access";
+    };
+    
     nixarr-services = {
       name = "Nixarr Service Integration";
       test = "curl -f -s --connect-timeout 5 http://127.0.0.1:8989/api/v3/system/status > /dev/null 2>&1 || curl -f -s --connect-timeout 5 http://127.0.0.1:7878/api/v3/system/status > /dev/null 2>&1";

@@ -12,6 +12,11 @@ import (
 #StorageManager: {
 	config: #NixOSConfig
 	
+	// NFS validation and health monitoring
+	nfs: #NFSManager & {
+		_config: config
+	}
+	
 	// Storage volumes aligned with NixOS persistence patterns
 	volumes: {
 		// Persistent application data
@@ -59,6 +64,7 @@ import (
 	management: #VolumeManagement & {
 		_volumes: volumes
 		_config: config
+		_nfs: nfs
 	}
 	
 	// Backup coordination
@@ -182,6 +188,7 @@ import (
 #VolumeManagement: {
 	_volumes: {...}
 	_config: #NixOSConfig
+	_nfs: #NFSManager
 	
 	// Initialize all volumes
 	initialize: bash.#Script & {
@@ -190,6 +197,10 @@ import (
 			set -euo pipefail
 			
 			echo "Initializing Dagger storage volumes..."
+			
+			# First validate NFS if configured
+			echo "Validating NFS storage..."
+			\(_nfs.validate_paths.script)
 			
 			# Create base directories
 			mkdir -p "\(_config.storage.persistRoot)/var/lib/dagger"
@@ -574,5 +585,241 @@ import (
 			]
 			backup_paths: [] // Media files backed up separately
 		}
+	}
+}
+
+// NFS mount management and health checking
+#NFSManager: {
+	_config: #NixOSConfig
+	
+	// NFS mount validation
+	validate: bash.#Script & {
+		script: """
+			#!/bin/bash
+			set -euo pipefail
+			
+			echo "Validating NFS storage availability..."
+			
+			NFS_MOUNT="/mnt/docker-data"
+			NFS_HOST="10.4.0.50"
+			
+			# Check if NFS mount directory exists
+			if [ ! -d "$NFS_MOUNT" ]; then
+				echo "NFS mount directory $NFS_MOUNT does not exist, skipping NFS validation"
+				exit 0
+			fi
+			
+			# Check if already mounted
+			if mountpoint -q "$NFS_MOUNT"; then
+				echo "✓ NFS mount $NFS_MOUNT is active"
+				
+				# Test connectivity and write access
+				if timeout 10 touch "$NFS_MOUNT/.dagger-nfs-test" 2>/dev/null; then
+					rm -f "$NFS_MOUNT/.dagger-nfs-test"
+					echo "✓ NFS mount is accessible and writable"
+				else
+					echo "✗ NFS mount is not accessible or writable"
+					exit 1
+				fi
+			else
+				echo "✗ NFS mount $NFS_MOUNT is not mounted"
+				
+				# Attempt to ping NFS server
+				if timeout 5 ping -c 1 "$NFS_HOST" >/dev/null 2>&1; then
+					echo "✓ NFS server $NFS_HOST is reachable"
+				else
+					echo "✗ NFS server $NFS_HOST is not reachable"
+					exit 1
+				fi
+				
+				# Attempt to mount
+				echo "Attempting to mount NFS..."
+				if mount "$NFS_MOUNT"; then
+					echo "✓ NFS mount successful"
+				else
+					echo "✗ Failed to mount NFS"
+					exit 1
+				fi
+			fi
+			
+			echo "NFS validation completed successfully"
+		"""
+	}
+	
+	// NFS health monitoring
+	monitor: bash.#Script & {
+		script: """
+			#!/bin/bash
+			set -euo pipefail
+			
+			echo "Monitoring NFS health..."
+			
+			NFS_MOUNT="/mnt/docker-data"
+			NFS_HOST="10.4.0.50"
+			
+			# Skip if NFS not configured
+			if [ ! -d "$NFS_MOUNT" ]; then
+				echo "NFS not configured, skipping monitoring"
+				exit 0
+			fi
+			
+			alerts=()
+			
+			# Check mount status
+			if ! mountpoint -q "$NFS_MOUNT"; then
+				alerts+=("NFS mount $NFS_MOUNT is not mounted")
+			fi
+			
+			# Check server connectivity
+			if ! timeout 5 ping -c 1 "$NFS_HOST" >/dev/null 2>&1; then
+				alerts+=("NFS server $NFS_HOST is not reachable")
+			fi
+			
+			# Check I/O performance
+			if mountpoint -q "$NFS_MOUNT"; then
+				start_time=$(date +%s.%N)
+				if timeout 10 touch "$NFS_MOUNT/.dagger-perf-test" 2>/dev/null; then
+					end_time=$(date +%s.%N)
+					duration=$(echo "$end_time - $start_time" | bc)
+					rm -f "$NFS_MOUNT/.dagger-perf-test"
+					
+					# Alert if I/O takes longer than 5 seconds
+					if (( $(echo "$duration > 5.0" | bc -l) )); then
+						alerts+=("NFS I/O performance degraded: ${duration}s write time")
+					else
+						echo "NFS I/O performance: ${duration}s"
+					fi
+				else
+					alerts+=("NFS write test failed")
+				fi
+			fi
+			
+			# Check disk usage
+			if mountpoint -q "$NFS_MOUNT"; then
+				usage=$(df "$NFS_MOUNT" | awk 'NR==2 {print $5}' | sed 's/%//')
+				echo "NFS usage: $usage%"
+				
+				if [ "$usage" -gt 90 ]; then
+					alerts+=("NFS usage critical: $usage%")
+				elif [ "$usage" -gt 80 ]; then
+					alerts+=("NFS usage warning: $usage%")
+				fi
+			fi
+			
+			# Report alerts
+			if [ ${#alerts[@]} -gt 0 ]; then
+				echo ""
+				echo "NFS ALERTS:"
+				printf '%s\n' "${alerts[@]}"
+				exit 1
+			fi
+			
+			echo "✓ NFS health check passed"
+		"""
+	}
+	
+	// NFS recovery operations
+	recover: bash.#Script & {
+		script: """
+			#!/bin/bash
+			set -euo pipefail
+			
+			echo "Attempting NFS recovery..."
+			
+			NFS_MOUNT="/mnt/docker-data"
+			NFS_HOST="10.4.0.50"
+			
+			if [ ! -d "$NFS_MOUNT" ]; then
+				echo "NFS not configured, skipping recovery"
+				exit 0
+			fi
+			
+			# Unmount if stale
+			if mountpoint -q "$NFS_MOUNT"; then
+				echo "Unmounting potentially stale NFS mount..."
+				umount -f "$NFS_MOUNT" || umount -l "$NFS_MOUNT" || true
+			fi
+			
+			# Wait for network
+			echo "Waiting for network connectivity..."
+			for i in {1..10}; do
+				if timeout 5 ping -c 1 "$NFS_HOST" >/dev/null 2>&1; then
+					echo "✓ Network connectivity restored"
+					break
+				fi
+				echo "Network connectivity attempt $i/10..."
+				sleep 5
+			done
+			
+			# Attempt remount
+			echo "Attempting to remount NFS..."
+			if mount "$NFS_MOUNT"; then
+				echo "✓ NFS remount successful"
+				
+				# Validate access
+				if timeout 10 touch "$NFS_MOUNT/.dagger-recovery-test" 2>/dev/null; then
+					rm -f "$NFS_MOUNT/.dagger-recovery-test"
+					echo "✓ NFS recovery completed successfully"
+				else
+					echo "✗ NFS mounted but not accessible"
+					exit 1
+				fi
+			else
+				echo "✗ NFS remount failed"
+				exit 1
+			fi
+		"""
+	}
+	
+	// Storage path validation with NFS awareness
+	validate_paths: bash.#Script & {
+		script: """
+			#!/bin/bash
+			set -euo pipefail
+			
+			echo "Validating storage paths with NFS awareness..."
+			
+			# Check if services need NFS storage
+			NFS_MOUNT="/mnt/docker-data"
+			MEDIA_ROOT="\(_config.storage.mediaRoot)"
+			STATE_ROOT="\(_config.storage.stateRoot)"
+			PERSIST_ROOT="\(_config.storage.persistRoot)"
+			
+			# Validate media storage (usually /fun)
+			if [ ! -d "$MEDIA_ROOT" ]; then
+				echo "✗ Media root directory $MEDIA_ROOT not found"
+				exit 1
+			else
+				echo "✓ Media root directory $MEDIA_ROOT exists"
+			fi
+			
+			# Validate state storage
+			if [ ! -d "$STATE_ROOT" ]; then
+				echo "Creating state root directory $STATE_ROOT"
+				mkdir -p "$STATE_ROOT"
+			fi
+			echo "✓ State root directory $STATE_ROOT exists"
+			
+			# Validate persistence storage
+			if [ ! -d "$PERSIST_ROOT" ]; then
+				echo "Creating persistence root directory $PERSIST_ROOT"
+				mkdir -p "$PERSIST_ROOT"
+			fi
+			echo "✓ Persistence root directory $PERSIST_ROOT exists"
+			
+			# Check NFS if configured
+			if [ -d "$NFS_MOUNT" ]; then
+				echo "Checking NFS storage at $NFS_MOUNT"
+				if mountpoint -q "$NFS_MOUNT"; then
+					echo "✓ NFS mount is available"
+				else
+					echo "⚠ NFS mount is not active, some services may have limited functionality"
+				fi
+			else
+				echo "NFS storage not configured"
+			fi
+			
+			echo "Storage path validation completed"
+		"""
 	}
 }

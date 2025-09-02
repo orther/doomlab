@@ -120,10 +120,11 @@ in {
         "network.target" 
         "dagger-coordinator.service" 
         "dagger-secret-injection.service"
-      ];
+      ] ++ optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount";
       requires = [ 
         "dagger-coordinator.service"
-      ] ++ optional cfg.enableBackup "dagger-secret-injection.service";
+      ] ++ optional cfg.enableBackup "dagger-secret-injection.service"
+        ++ optional (config.fileSystems ? "/mnt/docker-data") "mnt-docker-data.mount";
       
       environment = {
         DAGGER_HOMEBRIDGE_IMAGE = cfg.image;
