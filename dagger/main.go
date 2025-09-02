@@ -10,6 +10,12 @@ import (
 // Doomlab represents the main dagger module for the NixOS flake repository
 type Doomlab struct{}
 
+// Container represents a Dagger container
+type Container interface{}
+
+// Directory represents a Dagger directory 
+type Directory interface{}
+
 // NixOSMachines defines all available machine configurations
 var NixOSMachines = []string{
 	"workchng", "dsk1chng", "svr1chng", "svr2chng", "svr3chng",
@@ -25,8 +31,8 @@ var DarwinMachines = []string{
 func (m *Doomlab) Lint(
 	ctx context.Context,
 	// Source directory containing the flake
-	source any,
-) any {
+	source *Directory,
+) *Container {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -44,8 +50,8 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 func (m *Doomlab) CheckFormat(
 	ctx context.Context,
 	// Source directory containing the flake
-	source any,
-) any {
+	source *Directory,
+) *Container {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
