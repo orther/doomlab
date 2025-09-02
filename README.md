@@ -12,183 +12,201 @@
 [![blog post](https://img.shields.io/badge/blog%20post-snazzy-purple.svg)](https://chengeric.com/homelab?gh)
 ![stars](https://img.shields.io/github/stars/orther/doomlab?logo=github&style=flat&color)
 
-## Highlights
+## Quick Start
 
-This repo contains the Nix configurations for my homelab, AMD Ryzen desktop, M1
-MacBook Air, and work WSL setup.
+**Prerequisites:** Git and basic terminal knowledge. Nix will be installed automatically.
 
-- ❄️ Nix flakes handle upstream dependencies and track latest stable release of Nixpkgs (currently 24.11)
-- 🏠 [home-manager](https://github.com/nix-community/home-manager) manages
-  dotfiles
-- 🍎 [nix-darwin](https://github.com/LnL7/nix-darwin) manages MacBook
-- 🤫 [sops-nix](https://github.com/Mic92/sops-nix) manages secrets
-- 🔑 Remote initrd unlock system to decrypt drives on boot
-- 🌬️ Root on tmpfs aka
-  [impermanence](https://grahamc.com/blog/erase-your-darlings/)
-- 🔒 Automatic Let's Encrypt certificate registration and renewal
-- 🧩 Tailscale, Nextcloud, Jellyfin, Homebridge, Scrypted, among other nice
-  self-hosted applications
-- ⚡️ `justfile` contains useful aliases for many frequent and atrociously long
-  `nix` commands
-- 🤖 `flake.lock` updated daily via GitHub Action, servers are configured to
-  automatically upgrade daily via
-  [`modules/nixos/auto-update.nix`](https://github.com/orther/doomlab/blob/main/modules/nixos/auto-update.nix)
-- 🧱 Modular architecture promotes readability for me and copy-and-paste-ability
-  for you
-- 📦
-  [Custom ready-made tarball and ISO](https://github.com/orther/doomlab/releases)
-  for installing NixOS-on-WSL and NixOS, respectively
+### One-liner Install
+```bash
+# macOS or NixOS
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/orther/doomlab/main/install.sh)"
+```
 
-## Getting started
+### After Install
+```bash
+# Deploy local changes
+just deploy macos        # macOS
+just deploy MACHINE      # NixOS
 
-### macOS
+# Update everything  
+just up                  # Update flake inputs
+just deploy MACHINE      # Apply updates
+```
 
-On macOS, this script will install `nix` using the
-[Determinate Systems Nix installer](https://zero-to-nix.com/start/install) and
-prompt you to install my configuration.
+**Need help?** Check our [setup guide](docs/SETUP.md) or [troubleshooting guide](docs/TROUBLESHOOTING.md).
 
-> [!IMPORTANT] 
-> You'll need to run this script as sudo or have sudo permissions.
+## Architecture Overview
+
+This configuration manages **11 different machines** across three platforms using a modular approach:
+
+```
+doomlab/
+├── machines/           # Host-specific configurations (11 total)
+│   ├── macos/         # M1 MacBook Air  
+│   ├── noir/          # Main homelab server
+│   ├── wsl/           # Windows Subsystem for Linux
+│   └── ...            # 8 other specialized configs
+├── modules/           # Reusable components
+│   ├── nixos/         # NixOS-specific modules
+│   ├── darwin/        # macOS-specific modules  
+│   └── shared/        # Cross-platform modules
+├── services/          # Self-hosted applications
+│   ├── nextcloud.nix  # File sync & sharing
+│   ├── jellyfin.nix   # Media server
+│   └── tailscale.nix  # VPN mesh network
+└── secrets/           # Encrypted secrets (SOPS)
+```
+
+**Key Technologies:**
+- **Nix Flakes** - Reproducible system configurations
+- **Home Manager** - User environment & dotfiles  
+- **SOPS** - Encrypted secrets management
+- **Impermanence** - Root on tmpfs for stateless systems
+
+## Features & Highlights
+
+- ❄️ **Nix flakes** handle upstream dependencies and track latest stable release of Nixpkgs (currently 24.11)
+- 🏠 **[home-manager](https://github.com/nix-community/home-manager)** manages dotfiles across all platforms
+- 🍎 **[nix-darwin](https://github.com/LnL7/nix-darwin)** provides declarative macOS configuration
+- 🤫 **[sops-nix](https://github.com/Mic92/sops-nix)** manages encrypted secrets with age/GPG
+- 🔑 **Remote initrd unlock** system to decrypt drives on boot over SSH
+- 🌬️ **Root on tmpfs** aka [impermanence](https://grahamc.com/blog/erase-your-darlings/) for truly stateless systems
+- 🔒 **Automatic Let's Encrypt** certificate registration and renewal
+- 🧩 **Self-hosted services**: Tailscale, Nextcloud, Jellyfin, Homebridge, Scrypted, and more
+- ⚡️ **`just` command runner** provides simple aliases for complex Nix operations
+- 🤖 **Daily auto-updates** via GitHub Actions and systemd timers
+- 🧱 **Modular architecture** promotes readability and reusability
+- 📦 **Custom ISO/WSL images** available in [releases](https://github.com/orther/doomlab/releases)
+
+## Detailed Installation
+
+> [!NOTE]
+> For most users, the [Quick Start](#quick-start) section above is sufficient. This section provides detailed platform-specific instructions and advanced options.
+
+### macOS Installation
+
+The install script uses the [Determinate Systems Nix installer](https://zero-to-nix.com/start/install) and prompts to install the doomlab configuration.
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/orther/doomlab/main/install.sh)"
 ```
 
-### NixOS (Linux)
+**What this does:**
+1. Installs Nix with flakes enabled
+2. Clones this repository 
+3. Applies the macOS configuration
+4. Sets up home-manager for user dotfiles
 
-> [!IMPORTANT] 
-> You'll need to run this script as sudo or have sudo permissions.
+**Requirements:** Admin privileges for system configuration
+
+### NixOS Installation (Advanced Users)
 
 > [!WARNING] 
-> This script is primarily meant for my own use. Using it to install
-> NixOS on your own hardware will fail. At minimum, you'll need to do the
-> following before attemping installation:
+> This configuration is designed for my specific hardware. To use on your hardware:
 >
-> 1. Create a configuration for your own device in the `machines/` folder
-> 1. Retool your own sops-nix secrets or remove them entirely if you don't use
->    sops-nix
-> 1. Add an entry to flake.nix referencing the configuration created in step 1
+> 1. Create your machine config in `machines/your-hostname/`
+> 2. Update `flake.nix` with your machine entry
+> 3. Configure SOPS secrets or disable them entirely
+> 4. Review hardware-specific settings
 
-On Linux, _running this script from the NixOS installation ISO_ will prepare
-your system for NixOS by partitioning drives and mounting them.
-
+**From NixOS ISO:**
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/orther/doomlab/main/install.sh)"
 ```
 
-> [!TIP] 
-> When installing NixOS onto a headless local server, place your own
-> custom NixOS ISO file onto a USB drive with Ventoy.
-> [Ventoy can automatically load the NixOS ISO file](https://chengeric.com/homelab/#remotely-entering-nixos-installer),
-> and you can enable connectivity by building your own custom ISO with your own
-> personal SSH key.
-> [The custom ISO released in this repo](https://github.com/orther/doomlab/releases)
-> is baked with my own key.
+**Custom ISO Creation:**
+Build a custom ISO with your SSH keys for remote installation:
+```bash
+just build-iso  # Creates ISO in result/
+```
 
 ### Windows Subsystem for Linux (WSL)
 
-1. Enable WSL if you haven't done already:
+1. **Enable WSL:**
+   ```powershell
+   wsl --install --no-distribution
+   ```
 
-```powershell
-wsl --install --no-distribution
-```
+2. **Download and Import:**
+   ```powershell
+   # Download nixos-wsl.tar.gz from releases page
+   wsl --import NixOS $env:USERPROFILE\NixOS\ nixos-wsl.tar.gz
+   ```
 
-2. Download `nixos-wsl.tar.gz` from
-   [the latest release](https://github.com/orther/doomlab/releases).
+3. **Launch:**
+   ```powershell
+   wsl -d NixOS
+   ```
 
-3. Import the tarball into WSL:
+## Daily Commands
 
-```powershell
-wsl --import NixOS $env:USERPROFILE\NixOS\ nixos-wsl.tar.gz
-```
+The `justfile` provides convenient aliases for common operations. Run `just --list` to see all available commands.
 
-4. You can now run NixOS:
-
-```powershell
-wsl -d NixOS
-```
-
-## Useful commands 🛠️
-
-Install `just` to access the simple aliases below
-
-### Locally deploy changes
-
+### Deployment
 ```bash
-just deploy macos
+# Local deployment
+just deploy macos                    # Deploy to current macOS machine
+just deploy nixos-machine           # Deploy to NixOS machine locally
+
+# Remote deployment  
+just deploy noir 10.4.0.10         # Deploy to remote machine at IP
 ```
 
+### System Maintenance
 ```bash
-just deploy MACHINE
+just up                             # Update flake inputs (like npm update)
+just gc                             # Garbage collect old generations
+just repair                         # Verify and repair Nix store
 ```
 
-### Remote deployment
-
-To remotely deploy `MACHINE`, which has an IP address of `10.0.10.2`
-
+### Secrets Management
 ```bash
-just deploy MACHINE 10.0.10.2
+just sopsedit                       # Edit encrypted secrets file
+just sopsrotate                     # Rotate all secret keys
+just sopsupdate                     # Update keys for all secrets
+just fix-sop-keystxt               # Fix age keys after host key changes
 ```
 
-### Edit secrets
-
-Make sure each machine's public key is listed as entry in `.sops.yaml`. To
-modify `secrets/secrets.yaml`:
-
+### Development & Testing
 ```bash
-just secrets-edit
+just lint                           # Check Nix code with statix
+just build-iso                      # Build custom NixOS ISO
 ```
 
-### Syncing sops keys for a new machine
+**Pro tip:** Commands are designed to be run from the repository root. See the [justfile](justfile) for implementation details.
 
-```bash
-just secrets-sync
-```
+## 📚 Documentation
 
-## Important caveats
+- **[Setup Guide](docs/SETUP.md)** - Detailed walkthrough for first-time users
+- **[Architecture](docs/ARCHITECTURE.md)** - System design and module organization  
+- **[Secrets Management](docs/SECRETS.md)** - Complete SOPS workflow guide
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
-### Changing user passwords
+## 🎯 Future Roadmap
 
-To modify user password, first generate a hash
+- [ ] [Secure boot](https://github.com/nix-community/lanzaboote) with lanzaboote
+- [ ] Binary caching for faster builds
+- [ ] [Wireless remote unlocking](https://discourse.nixos.org/t/wireless-connection-within-initrd/38317/13) 
+- [ ] Automated health monitoring and alerting
+- [ ] Migration to NixOS 24.11 when stable
 
-```bash
-echo "password" | mkpasswd -m SHA-512 -s
-```
+## 📖 Learning Resources
 
-Then run `just edit-secrets` to replace the existing decrypted hash with the one
-that you just generated. If you use a password manager, sure to update the new
-password as necessary.
+### Essential References
+- [Search NixOS options](https://search.nixos.org/options) - Official option database
+- [Home Manager Option Search](https://mipmip.github.io/home-manager-option-search/) - User environment options
+- [Darwin Configuration Options](https://daiderd.com/nix-darwin/manual/index.html) - macOS-specific options
 
-### Changing SSH keys
+### Beginner Guides  
+- [NixOS and Flakes Book](https://nixos-and-flakes.thiscute.world/) - Excellent beginner introduction
+- [Zero to Nix](https://zero-to-nix.com/) - Official getting started guide
+- [Nix Pills](https://nixos.org/guides/nix-pills/) - Deep dive into Nix concepts
 
-Make sure you update the public key as it appears across the repository.
+### Advanced Topics
+- [Handling Secrets in NixOS](https://lgug2z.com/articles/handling-secrets-in-nixos-an-overview/) - Security best practices
+- [Impermanence Guide](https://elis.nu/blog/2020/05/nixos-tmpfs-as-root) - Root on tmpfs setup  
+- [NixOS on Hetzner](https://mhu.dev/posts/2024-01-06-nixos-on-hetzner) - Remote server deployment
 
-### Installation source
+---
 
-Make sure the Determinate Nix installer one-liner in `install.sh` is consistent
-with how it appears on the official website.
-
-## To-do
-
-1. [Secure boot](https://github.com/nix-community/lanzaboote)
-2. Binary caching
-3. [Wireless remote unlocking](https://discourse.nixos.org/t/wireless-connection-within-initrd/38317/13)
-
-## Frequently used resources
-
-- [Search NixOS options](https://search.nixos.org/options)
-- [Home Manager Option Search](https://mipmip.github.io/home-manager-option-search/)
-- [Darwin Configuration Options](https://daiderd.com/nix-darwin/manual/index.html)
-
-## Helpful references
-
-- [An outstanding beginner friendly introduction to NixOS and flakes](https://nixos-and-flakes.thiscute.world/)
-- [Conditional implementation](https://nixos.wiki/wiki/Extend_NixOS#Conditional_Implementation)
-- [Error when using lib.mkIf and lib.mkMerge to set configuration based on hostname](https://stackoverflow.com/questions/77527439/error-when-using-lib-mkif-and-lib-mkmerge-to-set-configuration-based-on-hostname)
-- [Handling Secrets in NixOS: An Overview](https://lgug2z.com/articles/handling-secrets-in-nixos-an-overview/)
-- [NixOS ❄: tmpfs as root](https://elis.nu/blog/2020/05/nixos-tmpfs-as-root)
-- [NixOS on Hetzner Dedicated](https://mhu.dev/posts/2024-01-06-nixos-on-hetzner)
-- [Setting up Nix on macOS](https://nixcademy.com/2024/01/15/nix-on-macos/)
-- [Users.users.<name>.packages vs home-manager packages](https://discourse.nixos.org/t/users-users-name-packages-vs-home-manager-packages/22240)
-- [Declaratively manage dock via nix](https://github.com/dustinlyons/nixos-config/blob/8a14e1f0da074b3f9060e8c822164d922bfeec29/modules/darwin/home-manager.nix#L74)
-- [Dealing with post nix-flake god complex](https://www.reddit.com/r/NixOS/comments/kauf1m/dealing_with_post_nixflake_god_complex/)
+**Questions?** Open an [issue](https://github.com/orther/doomlab/issues) or check the [discussions](https://github.com/orther/doomlab/discussions).
