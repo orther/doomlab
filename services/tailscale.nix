@@ -7,7 +7,10 @@
     authKeyFile = config.sops.secrets."tailscale-authkey".path;
     useRoutingFeatures = "server";
     extraUpFlags = [
-      "--advertise-routes=10.0.0.0/8"
+      # Only advertise specific networks that need routing
+      # 10.4.0.0/24 - Local homelab network
+      # 192.168.1.0/24 - Router/IoT network  
+      "--advertise-routes=10.4.0.0/24,192.168.1.0/24"
     ];
   };
 

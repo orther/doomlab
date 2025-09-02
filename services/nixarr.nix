@@ -18,15 +18,17 @@
     "dotnet-sdk-wrapped-6.0.428"
   ];
 
-  ##sops = {
-  ##  secrets = {
-  ##    "kopia-repository-token" = {};
-  ##    "wg.conf" = {
-  ##      format = "binary";
-  ##      sopsFile = ./../secrets/wg.conf;
-  ##    };
-  ##  };
-  ##};
+  # SOPS configuration for VPN and backup tokens (currently disabled)
+  # Uncomment and configure when needed:
+  # sops = {
+  #   secrets = {
+  #     "kopia-repository-token" = {};
+  #     "wg.conf" = {
+  #       format = "binary";
+  #       sopsFile = ./../secrets/wg.conf;
+  #     };
+  #   };
+  # };
 
   nixarr = {
     enable = true;
@@ -43,7 +45,7 @@
       package = pkgs.transmission_4;
       # todo: figure out how to update this easier
       peerPort = 46634;
-      ##vpn.enable = true;
+      # vpn.enable = true;  # Enable VPN when configured
       extraSettings = {
         incomplete-dir-enabled = false;
         speed-limit-up = 500;
@@ -57,35 +59,34 @@
     };
 
     vpn = {
-      ## TODO: enable vpn if it makes sense
       enable = false;
-      ##enable = true;
-      ##wgConf = config.sops.secrets."wg.conf".path;
+      # Enable VPN when configured:
+      # enable = true;
+      # wgConf = config.sops.secrets."wg.conf".path;
     };
   };
 
-  ## TODO: enable hardware once I nail down what noir server supports
-  ##nixpkgs.config.packageOverrides = pkgs: {
-  ##  vaapiIntel = pkgs.vaapiIntel.override {enableHybridCodec = true;};
-  ##};
-
-  ##hardware.opengl = {
-  ##  enable = true;
-  ##  extraPackages = with pkgs; [
-  ##    intel-compute-runtime # OpenCL filter support (hardware tonemapping and subtitle burn-in)
-  ##    intel-media-driver
-  ##    libvdpau-va-gl
-  ##    vaapiIntel
-  ##    vaapiVdpau
-  ##  ];
-  ##};
-
-  ##environment.systemPackages = with pkgs; [
-  ##  # To enable `intel_gpu_top`
-  ##  intel-gpu-tools
-  ##  # because nixarr does not include it by default
-  ##  wireguard-tools
-  ##];
+  # Hardware acceleration configuration (disabled until hardware requirements determined)
+  # Uncomment and adjust for your hardware:
+  # nixpkgs.config.packageOverrides = pkgs: {
+  #   vaapiIntel = pkgs.vaapiIntel.override {enableHybridCodec = true;};
+  # };
+  #
+  # hardware.opengl = {
+  #   enable = true;
+  #   extraPackages = with pkgs; [
+  #     intel-compute-runtime # OpenCL filter support
+  #     intel-media-driver
+  #     libvdpau-va-gl
+  #     vaapiIntel
+  #     vaapiVdpau
+  #   ];
+  # };
+  #
+  # environment.systemPackages = with pkgs; [
+  #   intel-gpu-tools      # For intel_gpu_top monitoring
+  #   wireguard-tools      # VPN tools (not included by default)
+  # ];
 
   services.nginx = {
     virtualHosts = {
@@ -138,30 +139,30 @@
   systemd = {
     tmpfiles.rules = ["d /var/lib/nixarr 0755 root root"];
 
-    ## TODO: enable backing up Nixarr
-    ##services = {
-    ##  "backup-nixarr" = {
-    ##    description = "Backup Nixarr installation with Kopia";
-    ##    wantedBy = ["default.target"];
-    ##    serviceConfig = {
-    ##      User = "root";
-    ##      ExecStartPre = "${pkgs.kopia}/bin/kopia repository connect from-config --token-file ${config.sops.secrets."kopia-repository-token".path}";
-    ##      ExecStart = "${pkgs.kopia}/bin/kopia snapshot create /var/lib/nixarr";
-    ##      ExecStartPost = "${pkgs.kopia}/bin/kopia repository disconnect";
-    ##    };
-    ##  };
-    ##};
-
-    ##timers = {
-    ##  "backup-nixarr" = {
-    ##    description = "Backup Nixarr installation with Kopia";
-    ##    wantedBy = ["timers.target"];
-    ##    timerConfig = {
-    ##      OnCalendar = "*-*-* 4:00:00";
-    ##      RandomizedDelaySec = "1h";
-    ##    };
-    ##  };
-    ##};
+    # Backup configuration with Kopia (disabled - enable when backup system is configured)
+    # services = {
+    #   "backup-nixarr" = {
+    #     description = "Backup Nixarr installation with Kopia";
+    #     wantedBy = ["default.target"];
+    #     serviceConfig = {
+    #       User = "root";
+    #       ExecStartPre = "${pkgs.kopia}/bin/kopia repository connect from-config --token-file ${config.sops.secrets."kopia-repository-token".path}";
+    #       ExecStart = "${pkgs.kopia}/bin/kopia snapshot create /var/lib/nixarr";
+    #       ExecStartPost = "${pkgs.kopia}/bin/kopia repository disconnect";
+    #     };
+    #   };
+    # };
+    #
+    # timers = {
+    #   "backup-nixarr" = {
+    #     description = "Backup Nixarr installation with Kopia";
+    #     wantedBy = ["timers.target"];
+    #     timerConfig = {
+    #       OnCalendar = "*-*-* 4:00:00";
+    #       RandomizedDelaySec = "1h";
+    #     };
+    #   };
+    # };
   };
 
   environment.persistence."/nix/persist" = {
