@@ -1,0 +1,9 @@
+keys:
+  - &noir age1agdx2gn9dm8s6gvsevlpa5agaamgvmtfq7rvh8t2725gqzmaka5qgda2g8
+  - &zinc age12pc2l7dyq0tlj0mm56vrwez6yr8nlve6vrucexf7x92dg7qlzcxskrf2tv
+creation_rules:
+  - path_regex: secrets/[^/]+(\.(yaml|json|env|ini|conf))?$
+    key_groups:
+      - age:
+          - *noir
+          - *zinc
