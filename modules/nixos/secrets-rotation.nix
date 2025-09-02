@@ -32,11 +32,6 @@ with lib;
 
   config = mkIf config.services.secrets-rotation.enable {
     # Create the secrets rotation script
-    environment.systemPackages = with pkgs; [
-      sops
-      ssh-to-age
-      age
-    ];
 
     systemd.services.secrets-rotation = {
       description = "Automated secrets rotation service";
@@ -135,9 +130,12 @@ with lib;
       "f /var/log/secrets-rotation.log 0644 root root -"
     ];
 
-    # Add manual rotation command to justfile integration
-    environment.systemPackages = [
-      (pkgs.writeShellScriptBin "secrets-rotate-manual" ''
+    # Add manual rotation command and required packages
+    environment.systemPackages = with pkgs; [
+      sops
+      ssh-to-age
+      age
+      (writeShellScriptBin "secrets-rotate-manual" ''
         echo "🔄 Manually triggering secrets rotation..."
         systemctl start secrets-rotation.service
         echo "✅ Secrets rotation initiated. Check logs: journalctl -u secrets-rotation"
