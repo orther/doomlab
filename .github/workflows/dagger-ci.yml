@@ -12,6 +12,11 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   # Fast feedback: linting and formatting
   lint:
@@ -191,23 +196,69 @@ jobs:
         with:
           script: |
             try {
+              const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: `## 🔬 Preview Environment
-                
-                A preview environment has been prepared for this PR.
-                
-                **Available machines:**
-                - NixOS: workchng, dsk1chng, svr1chng, svr2chng, svr3chng, noir, zinc, vmnixos
-                - Darwin: mair, mac1chng
-                
-                **Test commands:**
-                - \`dagger call get-machine-list\`
-                - \`dagger call hello --name="TEST"\`
-                
-                ✅ All checks must pass before merging.`
+                body: `## 🔬 Dagger CI/CD Pipeline
+
+                ✅ **Preview environment ready!**
+
+                **Available machines for testing:**
+                - **NixOS**: workchng, dsk1chng, svr1chng, svr2chng, svr3chng, noir, zinc, vmnixos
+                - **Darwin**: mair, mac1chng
+
+                **Test commands you can run locally:**
+                \`\`\`bash
+                # List all available machines
+                dagger call get-machine-list
+
+                # Test basic functionality
+                dagger call hello --name="YourName"
+                \`\`\`
+
+                **🔗 [View full pipeline results](${runUrl})**
+
+                ---
+                *This comment is automatically updated by the Dagger CI/CD pipeline*`
+              });
+            } catch (error) {
+              console.log("Could not comment on PR (likely permissions issue):", error.message);
+            }
+
+  # Comment on failures 
+  comment-on-failure:
+    name: "💬 Comment on Failure"
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'pull_request'
+    needs: [lint, test-nixos, test-darwin, security, test-services]
+    steps:
+      - name: Comment on failed PR
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            try {
+              const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## ❌ Dagger CI/CD Pipeline Failed
+
+                Some checks failed in this PR. Please review the errors and push fixes.
+
+                **🔗 [View detailed failure logs](${runUrl})**
+
+                **Common issues to check:**
+                - Dagger module compilation errors
+                - Workflow syntax problems  
+                - Missing dependencies or tools
+                - Permission or configuration issues
+
+                ---
+                *This comment is automatically posted when CI/CD pipeline fails*`
               });
             } catch (error) {
               console.log("Could not comment on PR (likely permissions issue):", error.message);
