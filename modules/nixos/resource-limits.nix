@@ -115,22 +115,6 @@ with lib;
         };
       };
 
-      # Nix daemon resource limits
-      nix-daemon = {
-        serviceConfig = {
-          MemoryMax = "8G";
-          CPUQuota = "400%"; # Allow up to 4 cores for builds
-          
-          # Increase limits for build processes
-          LimitNOFILE = 65536;
-          LimitNPROC = 32768;
-          
-          # Resource accounting
-          MemoryAccounting = true;
-          CPUAccounting = true;
-          TasksAccounting = true;
-        };
-      };
     };
 
     # System-wide resource monitoring and limits
