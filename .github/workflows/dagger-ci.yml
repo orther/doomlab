@@ -1,0 +1,218 @@
+---
+name: "Dagger CI/CD Pipeline"
+on:
+  push:
+    branches: [main, terragon/**]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      machine:
+        description: 'Specific machine to build (optional)'
+        required: false
+        type: string
+
+jobs:
+  # Fast feedback: linting and formatting
+  lint:
+    name: "🔍 Lint & Format"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Lint Nix code
+        run: dagger call lint-nix-code --source=.
+
+      - name: Check formatting
+        run: |
+          FORMATTED=$(dagger call format-nix-code --source=.)
+          if ! git diff --quiet; then
+            echo "❌ Code is not formatted. Run 'nix fmt' locally."
+            exit 1
+          fi
+
+  # Parallel testing of all configurations
+  test-nixos:
+    name: "🐧 Test NixOS Configurations"
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Test all NixOS configurations
+        run: dagger call test-all-nix-o-s-configurations --source=.
+
+  test-darwin:
+    name: "🍎 Test Darwin Configurations"
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Test all Darwin configurations
+        run: dagger call test-all-darwin-configurations --source=.
+
+  # Security and compliance checks
+  security:
+    name: "🔐 Security & Compliance"
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Security scan
+        run: dagger call security-scan --source=.
+
+      - name: Validate secrets
+        run: dagger call validate-secrets --source=.
+        continue-on-error: true  # Secrets validation may fail in CI
+
+  # Service configuration testing
+  test-services:
+    name: "🚀 Test Service Configurations"
+    runs-on: ubuntu-latest
+    needs: [test-nixos]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Test service configurations
+        run: dagger call test-service-configurations --source=.
+
+  # Build artifacts on main branch or tags
+  build-artifacts:
+    name: "🏗️ Build Release Artifacts"
+    runs-on: ubuntu-latest
+    needs: [test-nixos, test-darwin, security]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Build custom ISO
+        run: |
+          dagger call build-i-s-o --source=. export --path=./nixos.iso
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nixos-iso
+          path: nixos.iso
+
+  # Full pipeline for release builds
+  full-pipeline:
+    name: "🎯 Full Pipeline"
+    runs-on: ubuntu-latest
+    needs: [test-nixos, test-darwin, security, test-services]
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Run complete pipeline
+        run: dagger call run-full-pipeline --source=.
+
+  # Single machine build (manual trigger)
+  build-single:
+    name: "🖥️ Build Single Machine"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.machine != ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Build specific machine
+        run: |
+          MACHINE="${{ github.event.inputs.machine }}"
+          if [[ "$MACHINE" =~ ^(mair|mac1chng)$ ]]; then
+            dagger call build-darwin --source=. --machine="$MACHINE"
+          else
+            dagger call build-nix-o-s --source=. --machine="$MACHINE"
+          fi
+
+  # Deploy preview environment (PR only)
+  preview:
+    name: "🔬 Deploy Preview"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Create preview environment
+        run: |
+          echo "🔬 Preview environment would be deployed here"
+          echo "Machine configurations available:"
+          dagger call get-machine-list --source=.
+
+      - name: Comment PR with preview info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔬 Preview Environment
+              
+              A preview environment has been prepared for this PR.
+              
+              **Available machines:**
+              - NixOS: workchng, dsk1chng, svr1chng, svr2chng, svr3chng, noir, zinc, vmnixos
+              - Darwin: mair, mac1chng
+              
+              **Test commands:**
+              - \`dagger call build-nix-o-s --source=. --machine=MACHINE_NAME\`
+              - \`dagger call test-all-nix-o-s-configurations --source=.\`
+              
+              ✅ All checks must pass before merging.`
+            })

@@ -1,0 +1,118 @@
+---
+name: "Scheduled Dagger Health Checks"
+on:
+  schedule:
+    # Run health checks daily at 6 AM UTC (11 PM PDT/10 PM PST)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: "🏥 Health Check All Configurations"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Run health checks
+        run: |
+          echo "🏥 Running daily health checks..."
+          
+          # Test all configurations
+          dagger call test-all-nix-o-s-configurations --source=.
+          dagger call test-all-darwin-configurations --source=.
+          
+          # Security scan
+          dagger call security-scan --source=.
+          
+          # Service configuration tests
+          dagger call test-service-configurations --source=.
+          
+          echo "✅ All health checks passed!"
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Scheduled Health Check Failed',
+              body: `## Health Check Failure
+              
+              The scheduled health check failed on ${new Date().toISOString()}.
+              
+              **Failed job:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              
+              Please investigate the following:
+              - Configuration build failures
+              - Security scan issues  
+              - Service configuration problems
+              
+              This issue was automatically created by the scheduled health check workflow.`,
+              labels: ['bug', 'health-check', 'automated']
+            })
+
+  performance-check:
+    name: "⚡ Performance Monitoring"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+
+      - name: Monitor build performance
+        run: |
+          echo "⚡ Monitoring build performance..."
+          
+          START_TIME=$(date +%s)
+          
+          # Test a representative machine
+          dagger call build-nix-o-s --source=. --machine=workchng
+          
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          
+          echo "Build duration: ${DURATION} seconds"
+          echo "build_duration_seconds=${DURATION}" >> $GITHUB_ENV
+
+      - name: Report performance metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const duration = process.env.build_duration_seconds;
+            console.log(`Build took ${duration} seconds`);
+            
+            // Create a comment or issue if build time is too long (> 10 minutes)
+            if (parseInt(duration) > 600) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `⚠️ Build Performance Degradation Detected`,
+                body: `## Performance Alert
+                
+                Build time has increased significantly:
+                - **Duration**: ${duration} seconds (${Math.round(duration/60)} minutes)
+                - **Threshold**: 600 seconds (10 minutes)
+                - **Date**: ${new Date().toISOString()}
+                
+                Consider investigating:
+                - Binary cache performance
+                - Network connectivity issues
+                - Resource utilization
+                - Dependency changes
+                
+                This issue was automatically created by the performance monitoring workflow.`,
+                labels: ['performance', 'monitoring', 'automated']
+              });
+            }
