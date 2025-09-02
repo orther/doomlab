@@ -1,0 +1,47 @@
+# Dagger ignore file - excludes files from being sent to Dagger context
+
+# Build outputs
+result/
+result-*
+*.iso
+*.tar.gz
+
+# Secrets and keys
+secrets/
+.sops/
+*.age
+*.key
+
+# Cache directories
+.nix-cache/
+.cache/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+.docker/
+
+# Development databases
+*.sqlite
+*.db

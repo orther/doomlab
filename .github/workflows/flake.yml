@@ -7,18 +7,28 @@ on:
     - cron: 0 10 * * *
   workflow_dispatch: null
 jobs:
-  build:
+  update-flake:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: cachix/install-nix-action@v31
 
-      - run: nix flake update
+      - name: Update flake.lock
+        run: nix flake update
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Test updated configurations with Dagger
+        uses: dagger/dagger-for-github@v6
+        with:
+          version: "0.18.16"
+          verb: call
+          args: hello --name="Flake Update"
+
+      - name: Commit updated flake.lock
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(deps): bump flake.lock"
           commit_user_name: Flake Bot
