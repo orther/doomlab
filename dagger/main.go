@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-
-	"dagger.io/dagger"
 )
 
 // Doomlab represents the main dagger module for the NixOS flake repository
@@ -27,10 +25,10 @@ var DarwinMachines = []string{
 func (m *Doomlab) BuildNixOS(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
+	source *Directory,
 	// Machine name to build
 	machine string,
-) (*dagger.Container, error) {
+) (*Container, error) {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -43,10 +41,10 @@ func (m *Doomlab) BuildNixOS(
 func (m *Doomlab) BuildDarwin(
 	ctx context.Context,
 	// Source directory containing the flake  
-	source *dagger.Directory,
+	source *Directory,
 	// Machine name to build
 	machine string,
-) (*dagger.Container, error) {
+) (*Container, error) {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -58,8 +56,8 @@ func (m *Doomlab) BuildDarwin(
 func (m *Doomlab) TestAllNixOSConfigurations(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	container := dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -68,13 +66,11 @@ func (m *Doomlab) TestAllNixOSConfigurations(
 	// Add binary caches for faster builds
 	container = container.
 		WithExec([]string{"mkdir", "-p", "/etc/nix"}).
-		WithNewFile("/etc/nix/nix.conf", dagger.ContainerWithNewFileOpts{
-			Contents: `
+		WithNewFile("/etc/nix/nix.conf", `
 extra-experimental-features = nix-command flakes
 substituters = https://cache.nixos.org https://nix-community.cachix.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
-`,
-		})
+`)
 
 	// Test each NixOS configuration
 	for _, machine := range NixOSMachines {
@@ -95,8 +91,8 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 func (m *Doomlab) TestAllDarwinConfigurations(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	container := dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -105,13 +101,11 @@ func (m *Doomlab) TestAllDarwinConfigurations(
 	// Add binary caches for faster builds
 	container = container.
 		WithExec([]string{"mkdir", "-p", "/etc/nix"}).
-		WithNewFile("/etc/nix/nix.conf", dagger.ContainerWithNewFileOpts{
-			Contents: `
+		WithNewFile("/etc/nix/nix.conf", `
 extra-experimental-features = nix-command flakes
 substituters = https://cache.nixos.org https://nix-community.cachix.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
-`,
-		})
+`)
 
 	// Test each Darwin configuration
 	for _, machine := range DarwinMachines {
@@ -127,20 +121,18 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 func (m *Doomlab) Lint(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithExec([]string{"mkdir", "-p", "/etc/nix"}).
-		WithNewFile("/etc/nix/nix.conf", dagger.ContainerWithNewFileOpts{
-			Contents: `
+		WithNewFile("/etc/nix/nix.conf", `
 extra-experimental-features = nix-command flakes
 substituters = https://cache.nixos.org https://nix-community.cachix.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
-`,
-		}).
+`).
 		WithExec([]string{"nix", "flake", "check", "--no-build"}), nil
 }
 
@@ -148,20 +140,18 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 func (m *Doomlab) CheckFormat(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithExec([]string{"mkdir", "-p", "/etc/nix"}).
-		WithNewFile("/etc/nix/nix.conf", dagger.ContainerWithNewFileOpts{
-			Contents: `
+		WithNewFile("/etc/nix/nix.conf", `
 extra-experimental-features = nix-command flakes
 substituters = https://cache.nixos.org https://nix-community.cachix.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
-`,
-		}).
+`).
 		WithExec([]string{"cp", "-r", "/src", "/src-original"}).
 		WithExec([]string{"nix", "fmt"}).
 		WithExec([]string{"diff", "-r", "/src-original", "/src"}), nil
@@ -171,20 +161,18 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 func (m *Doomlab) FormatNixCode(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Directory, error) {
+	source *Directory,
+) (*Directory, error) {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithExec([]string{"mkdir", "-p", "/etc/nix"}).
-		WithNewFile("/etc/nix/nix.conf", dagger.ContainerWithNewFileOpts{
-			Contents: `
+		WithNewFile("/etc/nix/nix.conf", `
 extra-experimental-features = nix-command flakes
 substituters = https://cache.nixos.org https://nix-community.cachix.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=
-`,
-		}).
+`).
 		WithExec([]string{"nix", "fmt"}).
 		Directory("/src"), nil
 }
@@ -193,8 +181,8 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 func (m *Doomlab) BuildISO(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.File, error) {
+	source *Directory,
+) (*File, error) {
 	container := dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -208,8 +196,8 @@ func (m *Doomlab) BuildISO(
 func (m *Doomlab) SecurityScan(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	return dag.Container().
 		From("aquasec/trivy:latest").
 		WithDirectory("/src", source).
@@ -221,8 +209,8 @@ func (m *Doomlab) SecurityScan(
 func (m *Doomlab) ValidateSecrets(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	return dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -234,8 +222,8 @@ func (m *Doomlab) ValidateSecrets(
 func (m *Doomlab) TestServiceConfigurations(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	container := dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -260,10 +248,10 @@ func (m *Doomlab) TestServiceConfigurations(
 func (m *Doomlab) DeployPreview(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
+	source *Directory,
 	// Machine configuration to preview
 	machine string,
-) (*dagger.Service, error) {
+) (*Service, error) {
 	container := dag.Container().
 		From("nixos/nix:latest").
 		WithDirectory("/src", source).
@@ -278,8 +266,8 @@ func (m *Doomlab) DeployPreview(
 func (m *Doomlab) RunFullPipeline(
 	ctx context.Context,
 	// Source directory containing the flake
-	source *dagger.Directory,
-) (*dagger.Container, error) {
+	source *Directory,
+) (*Container, error) {
 	// Stage 1: Lint and format
 	_, err := m.LintNixCode(ctx, source)
 	if err != nil {
