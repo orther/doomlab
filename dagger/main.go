@@ -1,29 +1,34 @@
-// Package main provides Dagger pipeline functions for the doomlab NixOS flake
+// A generated module for Doomlab functions
+//
+// This module has been generated via dagger init and serves as a reference to
+// basic module structure as you get started with Dagger.
+//
+// Two functions have been pre-created. You can modify, delete, or add to them,
+// as needed. They demonstrate usage of arguments and return types using simple
+// echo and grep commands. The functions can be called from the dagger CLI or
+// from one of the SDKs.
+//
+// The first line in this comment block is a short description line and the
+// rest is a long description with more detail on the module's purpose or usage,
+// if appropriate. All modules should have a short description.
+
 package main
 
 import (
 	"context"
-	"fmt"
 	"strings"
 )
 
-// Doomlab represents the main dagger module for the NixOS flake repository
 type Doomlab struct{}
 
-// Container represents a Dagger container
-type Container interface{}
-
-// Directory represents a Dagger directory 
-type Directory interface{}
-
 // NixOSMachines defines all available machine configurations
-var NixOSMachines = []string{
+var nixOSMachines = []string{
 	"workchng", "dsk1chng", "svr1chng", "svr2chng", "svr3chng",
 	"noir", "zinc", "vmnixos", "iso1chng",
 }
 
 // DarwinMachines defines all available Darwin machine configurations  
-var DarwinMachines = []string{
+var darwinMachines = []string{
 	"mair", "mac1chng",
 }
 
@@ -46,7 +51,7 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 		WithExec([]string{"nix", "flake", "check", "--no-build"})
 }
 
-// CheckFormat checks if Nix code is properly formatted by formatting and checking for differences
+// CheckFormat checks if Nix code is properly formatted
 func (m *Doomlab) CheckFormat(
 	ctx context.Context,
 	// Source directory containing the flake
@@ -68,9 +73,7 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 }
 
 // GetMachineList returns all available machine configurations
-func (m *Doomlab) GetMachineList(
-	ctx context.Context,
-) string {
-	allMachines := append(NixOSMachines, DarwinMachines...)
+func (m *Doomlab) GetMachineList(ctx context.Context) string {
+	allMachines := append(nixOSMachines, darwinMachines...)
 	return strings.Join(allMachines, "\n")
 }
