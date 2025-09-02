@@ -4,12 +4,11 @@
   ...
 }: {
   imports = [
-    inputs.home-manager.nixosModules.home-manager
-    inputs.nixos-wsl.nixosModules.default
+    inputs.home-manager.darwinModules.home-manager
 
     ./hardware-configuration.nix
 
-    ./../../modules/wsl/base.nix
+    ./../../modules/macos/base.nix
   ];
 
   home-manager = {
@@ -20,10 +19,17 @@
       orther = {
         imports = [
           ./../../modules/home-manager/base.nix
+          ./../../modules/home-manager/fonts.nix
+          ./../../modules/home-manager/alacritty.nix
+          ./../../modules/home-manager/1password.nix
         ];
       };
     };
   };
 
-  networking.hostName = "workchng";
+  networking = {
+    hostName = "stud";
+    computerName = "stud";
+    localHostName = "stud";
+  };
 }

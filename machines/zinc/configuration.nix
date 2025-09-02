@@ -14,11 +14,6 @@
     ./../../modules/nixos/auto-update.nix
 
     ./../../services/tailscale.nix
-    
-    # Optional services - uncomment as needed:
-    # ./../../services/netdata.nix
-    # ./../../services/nextcloud.nix
-    # ./../../services/nixarr.nix
   ];
 
   home-manager = {
