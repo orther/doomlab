@@ -27,10 +27,10 @@ jobs:
           version: "0.18.16"
 
       - name: Lint Nix code
-        run: dagger call lint-nix-code --source=.
+        run: dagger call lint --source=.
 
       - name: Check formatting
-        run: dagger call check-nix-formatting --source=.
+        run: dagger call check-format --source=.
 
   # Parallel testing of all configurations
   test-nixos:

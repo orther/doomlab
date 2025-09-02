@@ -123,8 +123,8 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 	return container, nil
 }
 
-// LintNixCode runs nix flake check to validate all configurations
-func (m *Doomlab) LintNixCode(
+// Lint runs nix flake check to validate all configurations
+func (m *Doomlab) Lint(
 	ctx context.Context,
 	// Source directory containing the flake
 	source *dagger.Directory,
@@ -144,8 +144,8 @@ trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDS
 		WithExec([]string{"nix", "flake", "check", "--no-build"}), nil
 }
 
-// CheckNixFormatting checks if Nix code is properly formatted by formatting and checking for differences
-func (m *Doomlab) CheckNixFormatting(
+// CheckFormat checks if Nix code is properly formatted by formatting and checking for differences
+func (m *Doomlab) CheckFormat(
 	ctx context.Context,
 	// Source directory containing the flake
 	source *dagger.Directory,
