@@ -30,6 +30,11 @@ lint:
   @echo "🔍 Linting Nix code..."
   statix check .
 
+# Lint using Dagger (with better caching and reproducibility)
+lint-dagger:
+  @echo "🔍 Linting Nix code with Dagger..."
+  dagger call lint-nix-code --source=.
+
 # Garbage collect old system generations (keeps 7 days)
 gc:
   @echo "🗑️  Cleaning up old generations and store paths..."
@@ -63,6 +68,12 @@ build-iso:
   @echo "💿 Building custom NixOS ISO..."
   nix build .#nixosConfigurations.iso1chng.config.system.build.isoImage
   @echo "✅ ISO built! Check result/ directory"
+
+# Build custom NixOS installation ISO using Dagger
+build-iso-dagger:
+  @echo "💿 Building custom NixOS ISO with Dagger..."
+  dagger call build-i-s-o --source=. export --path=./nixos.iso
+  @echo "✅ ISO built! Check nixos.iso file"
 
 # Fix SOPS age keys after SSH host key changes
 fix-sops-keys:
@@ -161,6 +172,60 @@ resource-summary:
   @echo ""
   @echo "=== Top Processes ==="
   ps aux --sort=-%mem | head -6
+
+# Dagger-powered commands for modern CI/CD
+# Test all machine configurations using Dagger
+test-all:
+  @echo "🧪 Testing all machine configurations with Dagger..."
+  dagger call test-all-nix-o-s-configurations --source=.
+  dagger call test-all-darwin-configurations --source=.
+
+# Test specific machine configuration
+test-machine machine:
+  @echo "🧪 Testing {{machine}} configuration..."
+  #!/usr/bin/env sh
+  if [[ "{{machine}}" =~ ^(mair|mac1chng)$ ]]; then
+    dagger call build-darwin --source=. --machine="{{machine}}"
+  else
+    dagger call build-nix-o-s --source=. --machine="{{machine}}"
+  fi
+
+# Run security scan with Dagger
+security-scan:
+  @echo "🔐 Running security scan..."
+  dagger call security-scan --source=.
+
+# Test service configurations
+test-services:
+  @echo "🚀 Testing service configurations..."
+  dagger call test-service-configurations --source=.
+
+# Run full Dagger pipeline
+pipeline:
+  @echo "🎯 Running full Dagger pipeline..."
+  dagger call run-full-pipeline --source=.
+
+# Format code using Dagger
+fmt-dagger:
+  @echo "🎨 Formatting code with Dagger..."
+  dagger call format-nix-code --source=. export --path=.
+
+# Get list of available machines
+machines:
+  @echo "🖥️  Available machine configurations:"
+  dagger call get-machine-list --source=.
+
+# Deploy with pre-flight checks using Dagger
+deploy-safe machine ip='':
+  @echo "🛡️  Running pre-flight checks for {{machine}}..."
+  just test-machine {{machine}}
+  @echo "✅ Pre-flight checks passed! Proceeding with deployment..."
+  just deploy {{machine}} {{ip}}
+
+# Create preview environment for testing
+preview machine:
+  @echo "🔬 Creating preview environment for {{machine}}..."
+  dagger call deploy-preview --source=. --machine="{{machine}}"
 
 # Legacy aliases (deprecated - use new names above)
 sopsedit: secrets-edit
