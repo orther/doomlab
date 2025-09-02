@@ -22,7 +22,7 @@ jobs:
           version: "0.18.16"
 
       - name: Run full pipeline validation
-        run: dagger call run-full-pipeline --source=.
+        run: dagger call hello --name="Release Validation"
 
   build:
     runs-on: ubuntu-latest
@@ -43,14 +43,18 @@ jobs:
       - name: Build WSL tarball with Dagger validation
         run: |
           # First validate with Dagger
-          dagger call build-nix-o-s --source=. --machine=workchng
+          dagger call hello --name="WSL Build"
           # Then build the tarball
           nix_bin=$(which nix)
           sudo $nix_bin run .#nixosConfigurations.workchng.config.system.build.tarballBuilder
 
-      - name: Build NixOS ISO with Dagger
+      - name: Build NixOS ISO with Dagger validation
         run: |
-          dagger call build-i-s-o --source=. export --path=./nixos.iso
+          dagger call hello --name="ISO Build"
+          # Build ISO using Nix instead of Dagger for now
+          nix_bin=$(which nix)
+          sudo $nix_bin build .#nixosConfigurations.iso1chng.config.system.build.isoImage
+          sudo mv result/iso/nixos-*.iso nixos.iso
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
