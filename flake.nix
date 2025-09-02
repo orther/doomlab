@@ -77,6 +77,72 @@
     # Enables `nix fmt` at root of repo to format all nix files
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
+    # Development shells with Dagger CLI and utilities
+    devShells = forAllSystems (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      default = pkgs.mkShell {
+        name = "doomlab-dev";
+        packages = with pkgs; [
+          # Core development tools
+          git
+          gh
+          jq
+          curl
+          
+          # Container and orchestration tools
+          dagger
+          podman
+          podman-compose
+          buildah
+          skopeo
+          
+          # Backup and storage tools
+          kopia
+          rclone
+          
+          # Monitoring and debugging
+          dig
+          netcat
+          htop
+          
+          # Nix development
+          alejandra
+          nix-prefetch-git
+          nix-tree
+        ];
+        
+        shellHook = ''
+          echo "🚀 doomlab-corrupted development environment"
+          echo "   Dagger: $(${pkgs.dagger}/bin/dagger version)"
+          echo "   Available commands:"
+          echo "     - dagger: Container orchestration"
+          echo "     - nixarr-migrate: Service migration utilities"
+          echo "     - dagger-nixarr-summary: Integration status"
+          echo ""
+          echo "   Quick start:"
+          echo "     1. nixos-rebuild switch --flake ."
+          echo "     2. nixarr-migrate status"
+          echo "     3. dagger call --help"
+        '';
+      };
+    });
+
+    # Packages exported by this flake
+    packages = forAllSystems (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      # Dagger CLI with proper configuration
+      dagger = pkgs.dagger;
+      
+      # Utility scripts for migration and management
+      nixarr-migration-tools = pkgs.writeShellApplication {
+        name = "nixarr-migration-tools";
+        runtimeInputs = [ pkgs.dagger pkgs.curl pkgs.jq pkgs.systemd ];
+        text = builtins.readFile ./scripts/migration-tools.sh;
+      };
+    });
+
     darwinConfigurations = {
       mair = nix-darwin.lib.darwinSystem {
         system = "x86_64-darwin"; # Specify system for mair

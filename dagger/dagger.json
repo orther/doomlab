@@ -1,0 +1,7 @@
+{
+  "name": "doomlab",
+  "engineVersion": "v0.13.3",
+  "dependencies": [
+    "github.com/shykes/daggerverse/wolfi@v0.1.2"
+  ]
+}
