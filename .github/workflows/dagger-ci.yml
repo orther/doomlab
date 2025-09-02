@@ -30,12 +30,7 @@ jobs:
         run: dagger call lint-nix-code --source=.
 
       - name: Check formatting
-        run: |
-          FORMATTED=$(dagger call format-nix-code --source=.)
-          if ! git diff --quiet; then
-            echo "❌ Code is not formatted. Run 'nix fmt' locally."
-            exit 1
-          fi
+        run: dagger call check-nix-formatting --source=.
 
   # Parallel testing of all configurations
   test-nixos:
