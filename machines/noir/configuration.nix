@@ -8,7 +8,6 @@
   imports = [
     inputs.impermanence.nixosModules.impermanence
     inputs.home-manager.nixosModules.home-manager
-    #inputs.nixarr.nixosModules.default # Keep commented if not used
 
     ./hardware-configuration.nix
 
@@ -18,9 +17,6 @@
 
     ./../../services/nas.nix
     ./../../services/tailscale.nix
-    #./../../services/netdata.nix # Keep commented if not used
-    #./../../services/nextcloud.nix # Keep commented if not used
-    #./../../services/nixarr.nix # Keep commented if not used
   ];
 
   home-manager = {
