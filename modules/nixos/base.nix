@@ -8,6 +8,8 @@
     inputs.sops-nix.nixosModules.sops
 
     ./_packages.nix
+    ./secrets-rotation.nix
+    ./resource-limits.nix
   ];
 
   boot.loader = {
