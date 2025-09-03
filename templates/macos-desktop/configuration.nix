@@ -28,8 +28,8 @@
   };
 
   networking = {
-    hostName = "mac1chng";
-    computerName = "mac1chng";
-    localHostName = "mac1chng";
+    hostName = "CHANGEME"; # Change this to your hostname
+    computerName = "CHANGEME"; # Change this to your computer name
+    localHostName = "CHANGEME"; # Change this to your local hostname
   };
 }
