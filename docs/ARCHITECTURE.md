@@ -286,10 +286,10 @@ systemctl status nginx
 ### 2. Remote Deployment
 ```bash
 # Deploy to remote machine
-just deploy noir 10.4.0.10
+just deploy noir 10.4.0.26
 
 # Check status
-ssh orther@10.4.0.10 systemctl status --failed
+ssh orther@10.4.0.26 systemctl status --failed
 ```
 
 ### 3. Updates and Maintenance
@@ -298,7 +298,7 @@ ssh orther@10.4.0.10 systemctl status --failed
 just up
 
 # Deploy updates to all machines
-just deploy noir 10.4.0.10
+just deploy noir 10.4.0.26
 just deploy macos
 ```
 

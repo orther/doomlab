@@ -6,7 +6,7 @@ default:
 # Examples:
 #   just deploy macos                    # Deploy macOS config locally  
 #   just deploy nixos-machine           # Deploy NixOS config locally
-#   just deploy noir 10.4.0.10         # Deploy to remote machine
+#   just deploy noir 10.4.0.26         # Deploy to remote machine
 deploy machine ip='':
   #!/usr/bin/env sh
   echo "🚀 Deploying {{machine}}..."
