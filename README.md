@@ -149,7 +149,7 @@ just deploy macos                    # Deploy to current macOS machine
 just deploy nixos-machine           # Deploy to NixOS machine locally
 
 # Remote deployment  
-just deploy noir 10.4.0.10         # Deploy to remote machine at IP
+just deploy noir 10.4.0.26         # Deploy to remote machine at IP
 ```
 
 ### System Maintenance
