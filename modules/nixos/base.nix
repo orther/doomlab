@@ -169,8 +169,7 @@
     }
   ];
 
-  # Only configure persistence if impermanence module is available
-  environment.persistence."/nix/persist" = lib.mkIf (config ? environment.persistence) {
+  environment.persistence."/nix/persist" = {
     # Hide these mounts from the sidebar of file managers
     hideMounts = true;
 
