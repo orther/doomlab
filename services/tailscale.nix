@@ -14,10 +14,5 @@
     ];
   };
 
-  # Only configure persistence if impermanence module is available
-  environment.persistence."/nix/persist" = lib.mkIf (config ? environment.persistence) {
-    directories = [
-      "/var/lib/tailscale"
-    ];
-  };
+  # Note: Tailscale state persistence can be configured separately if using impermanence module
 }
