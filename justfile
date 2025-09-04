@@ -70,10 +70,22 @@ build-iso:
   @echo "✅ ISO built! Check result/ directory"
 
 # Build custom NixOS installation ISO using Dagger
-build-iso-dagger:
-  @echo "💿 Building custom NixOS ISO with Dagger..."
-  dagger call build-i-s-o --source=. export --path=./nixos.iso
+build-iso-dagger arch='x86_64-linux':
+  @echo "💿 Building custom NixOS ISO with Dagger for {{arch}}..."
+  dagger call build-iso --source=. --arch="{{arch}}" export --path=./nixos.iso
   @echo "✅ ISO built! Check nixos.iso file"
+
+# Build ARM64 ISO using Dagger (for Apple Silicon or ARM64 systems)
+build-iso-arm64:
+  @echo "💿 Building custom NixOS ISO for ARM64 with Dagger..."
+  dagger call build-iso --source=. --arch="aarch64-linux" export --path=./nixos-arm64.iso
+  @echo "✅ ARM64 ISO built! Check nixos-arm64.iso file"
+
+# Build x86_64 ISO using simplified Dagger approach (to avoid seccomp issues)
+build-iso-x86_64-simple:
+  @echo "💿 Building x86_64 NixOS ISO with simplified Dagger approach..."
+  dagger call build-isosimple --source=. export --path=./nixos-x86_64.iso
+  @echo "✅ x86_64 ISO built! Check nixos-x86_64.iso file"
 
 # Fix SOPS age keys after SSH host key changes
 fix-sops-keys:
@@ -185,9 +197,9 @@ test-machine machine:
   @echo "🧪 Testing {{machine}} configuration..."
   #!/usr/bin/env sh
   if [[ "{{machine}}" =~ ^(mair|mac1chng)$ ]]; then
-    dagger call build-darwin --source=. --machine="{{machine}}"
+  dagger call build-darwin --source=. --machine="{{machine}}"
   else
-    dagger call build-nix-o-s --source=. --machine="{{machine}}"
+  dagger call build-nix-o-s --source=. --machine="{{machine}}"
   fi
 
 # Run security scan with Dagger
