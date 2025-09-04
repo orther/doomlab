@@ -209,12 +209,6 @@ with lib;
       "f /var/log/system-resources.log 0644 nobody nogroup -"
     ];
 
-    # Persist monitoring logs
-    environment.persistence."/nix/persist" = mkIf (config ? environment.persistence) {
-      files = [
-        "/var/log/system-resources.log"
-        "/var/log/system-resources.log.old"
-      ];
-    };
+    # Note: Log persistence can be configured separately if using impermanence module
   };
 }
