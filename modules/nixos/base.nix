@@ -169,7 +169,50 @@
     }
   ];
 
-  # Note: System and user data persistence can be configured separately if using impermanence module
+  # Only configure persistence if impermanence module is available
+  environment.persistence."/nix/persist" = lib.mkIf (config ? environment.persistence) {
+    # Hide these mounts from the sidebar of file managers
+    hideMounts = true;
+
+    directories = [
+      "/var/log"
+      # inspo: https://github.com/nix-community/impermanence/issues/178
+      "/var/lib/nixos"
+      # Persist network manager connections if needed
+      # "/etc/NetworkManager/system-connections"
+    ];
+
+    files = [
+      "/etc/machine-id"
+      "/etc/ssh/ssh_host_ed25519_key.pub"
+      "/etc/ssh/ssh_host_ed25519_key"
+      "/etc/ssh/ssh_host_rsa_key.pub"
+      "/etc/ssh/ssh_host_rsa_key"
+    ];
+
+    users."orther" = {
+      directories = [
+        "git" # Persists /home/orther/git -> /nix/persist/home/orther/git
+
+        ".cache"
+        ".config"
+        ".config/nvim" # Persist Neovim config
+        ".local"
+        {
+          directory = ".gnupg";
+          mode = "0700";
+        }
+        {
+          directory = ".ssh";
+          mode = "0700";
+        }
+      ];
+      files = [
+        ".zsh_history"
+        #".zshrc" # Managed by home-manager
+      ];
+    };
+  };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "23.11"; # Keep this consistent unless intentionally upgrading state
