@@ -143,7 +143,7 @@ with lib;
     ];
 
     # Persist rotation logs and backups
-    environment.persistence."/nix/persist" = mkIf (config ? environment.persistence) {
+    environment.persistence."/nix/persist" = lib.mkIf (config ? environment.persistence) {
       directories = [
         {
           directory = "/var/backup/secrets";
