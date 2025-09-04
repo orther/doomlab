@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   sops.secrets."tailscale-authkey" = {};
 
   services.tailscale = {
@@ -14,7 +14,8 @@
     ];
   };
 
-  environment.persistence."/nix/persist" = {
+  # Only configure persistence if impermanence module is available
+  environment.persistence."/nix/persist" = lib.mkIf (config ? environment.persistence) {
     directories = [
       "/var/lib/tailscale"
     ];
