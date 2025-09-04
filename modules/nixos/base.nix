@@ -2,6 +2,7 @@
   inputs,
   config,
   pkgs,
+  lib,
   ...
 }: {
   imports = [
@@ -117,10 +118,10 @@
     networkmanager.enable = true;
   };
 
-  # Disable wait-online services to speed up boot
+  # Disable wait-online services to speed up boot (allow override)
   # See: https://github.com/NixOS/nixpkgs/issues/180175#issuecomment-1658731959
-  systemd.services.NetworkManager-wait-online.enable = false;
-  systemd.services.systemd-networkd-wait-online.enable = false;
+  systemd.services.NetworkManager-wait-online.enable = lib.mkDefault false;
+  systemd.services.systemd-networkd-wait-online.enable = lib.mkDefault false;
 
   programs.zsh.enable = true;
   
