@@ -10,10 +10,8 @@
     ./hardware-configuration.nix
 
     ./../../modules/nixos/base.nix
-    ./../../modules/nixos/desktop.nix
-    ./../../modules/nixos/amdgpu.nix
-
-    ./../../services/tailscale.nix
+    # Optional: Add desktop environment support
+    # ./../../modules/nixos/desktop.nix
   ];
 
   home-manager = {
@@ -27,11 +25,25 @@
           ./../../modules/home-manager/fonts.nix
           ./../../modules/home-manager/alacritty.nix
           ./../../modules/home-manager/1password.nix
-          ./../../modules/home-manager/desktop.nix
         ];
+
+        programs.git = {
+          enable = true;
+          userName = "Brandon Orther";
+          userEmail = "brandon@orther.dev";
+        };
       };
     };
   };
 
-  networking.hostName = "dsk1chng";
+  networking.hostName = "CHANGEME"; # Change this to your hostname
+
+  # Enable networking
+  networking.networkmanager.enable = true;
+
+  # Set your time zone
+  time.timeZone = "America/Los_Angeles";
+
+  # Configure console keymap
+  console.keyMap = "us";
 }

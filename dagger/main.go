@@ -14,12 +14,11 @@ func (m *Doomlab) GetMachineList(
 	ctx context.Context,
 ) string {
 	nixOSMachines := []string{
-		"workchng", "dsk1chng", "svr1chng", "svr2chng", "svr3chng",
-		"noir", "zinc", "vmnixos", "iso1chng",
+		"noir", "zinc", "iso1chng",
 	}
 	
 	darwinMachines := []string{
-		"mair", "mac1chng",
+		"mair", "stud",
 	}
 	
 	allMachines := append(nixOSMachines, darwinMachines...)
