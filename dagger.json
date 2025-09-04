@@ -1,7 +1,8 @@
 {
   "name": "doomlab",
-  "sdk": "go",
-  "dependencies": [],
-  "source": "dagger",
-  "engineVersion": "v0.18.16"
+  "engineVersion": "v0.18.16",
+  "sdk": {
+    "source": "go"
+  },
+  "source": "dagger"
 }

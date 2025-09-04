@@ -55,6 +55,8 @@
       "aarch64-darwin"
       # Add x86_64-darwin if needed for mair
       "x86_64-darwin"
+      # Add aarch64-darwin if needed for vm
+      "aarch64-linux"
     ];
 
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -85,10 +87,29 @@
         ];
       };
 
+      iso-aarch64 = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
+          ./machines/iso1chng/configuration.nix
+          {
+            # Override hostname for ARM64 variant
+            networking.hostName = nixpkgs.lib.mkForce "iso-aarch64";
+          }
+        ];
+      };
+
       noir = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/noir/configuration.nix];
+      };
+
+      vm = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = {inherit inputs outputs;};
+        modules = [./machines/vm/configuration.nix];
       };
 
       zinc = nixpkgs.lib.nixosSystem {
