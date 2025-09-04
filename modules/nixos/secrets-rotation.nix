@@ -142,17 +142,6 @@ with lib;
       '')
     ];
 
-    # Persist rotation logs and backups
-    environment.persistence."/nix/persist" = lib.mkIf (config ? environment.persistence) {
-      directories = [
-        {
-          directory = "/var/backup/secrets";
-          mode = "0700";
-        }
-      ];
-      files = [
-        "/var/log/secrets-rotation.log"
-      ];
-    };
+    # Note: Log and backup persistence can be configured separately if using impermanence module
   };
 }
