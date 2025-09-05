@@ -60,8 +60,10 @@
     inherit (self) outputs;
 
     systems = [
-      "x86_64-linux"
       "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "x86_64-linux"
     ];
 
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -71,22 +73,18 @@
 
     darwinConfigurations = {
       mair = nix-darwin.lib.darwinSystem {
+        system = "x86_64-darwin"; # Specify system for mair
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/mair/configuration.nix];
+      };
+      stud = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin"; # Specify system for stud
+        specialArgs = {inherit inputs outputs;};
+        modules = [./machines/stud/configuration.nix];
       };
     };
 
     nixosConfigurations = {
-      workchng = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [./machines/workchng/configuration.nix];
-      };
-
-      dsk1chng = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [./machines/dsk1chng/configuration.nix];
-      };
-
       iso1chng = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
@@ -96,27 +94,33 @@
         ];
       };
 
-      svr1chng = nixpkgs.lib.nixosSystem {
+      iso-aarch64 = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
         specialArgs = {inherit inputs outputs;};
-        modules = [./machines/svr1chng/configuration.nix];
-      };
-
-      svr2chng = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [./machines/svr2chng/configuration.nix];
-      };
-
-      svr3chng = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [./machines/svr3chng/configuration.nix];
+        modules = [
+          (nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix")
+          ./machines/iso1chng/configuration.nix
+          {
+            # Override hostname for ARM64 variant
+            networking.hostName = nixpkgs.lib.mkForce "iso-aarch64";
+          }
+        ];
       };
 
       noir = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/noir/configuration.nix];
       };
 
+      vm = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = {inherit inputs outputs;};
+        modules = [./machines/vm/configuration.nix];
+      };
+
       zinc = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {inherit inputs outputs;};
         modules = [./machines/zinc/configuration.nix];
       };
