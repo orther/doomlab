@@ -1,49 +1,57 @@
+
 {
-  config,
-  lib,
-  pkgs,
   inputs,
   outputs,
   ...
 }: {
   imports = [
-    ./hardware-configuration.nix
-    ../../modules/nixos/base.nix
+    inputs.impermanence.nixosModules.impermanence
     inputs.home-manager.nixosModules.home-manager
+
+    ./hardware-configuration.nix
+
+    ./../../modules/nixos/base.nix
+    ./../../modules/nixos/remote-unlock.nix
+    ./../../modules/nixos/auto-update.nix
+
+    # ./../../services/tailscale.nix
   ];
 
-  # System configuration
-  networking.hostName = "doomlab-vm";
-  time.timeZone = "America/Los_Angeles";
-
-  # User configuration
-  users.users.orther = {
-    isNormalUser = true;
-    extraGroups = ["wheel" "networkmanager"];
-    openssh.authorizedKeys.keys = [
-      # Add your SSH public key here
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDvJx1pyQwQVPPdXlqhJEtUlKyVr4HbZvgbjZ96t75Re brandon@orther.dev"
-    ];
-  };
-
-  # Enable root user with password for VM management
-  users.users.root = {
-    # Set this to your password hash generated with: mkpasswd -m sha-512
-    hashedPassword = "$6$rounds=4096$6$FvLcGQCKcw9urvyq$Dzy29Kx7oklZV75QwWGgSpdqzQ74xgBi1mGAGB.WylKS1ogRSLrqNEMc0O.dYBp8SGp7IlddtV6WIklBMrMz61";
-  };
-
-  # SSH configuration
-  services.openssh = {
-    enable = true;
-    settings.PasswordAuthentication = false;
-    settings.PermitRootLogin = "no";
-  };
-
-  # Home Manager
   home-manager = {
     extraSpecialArgs = {inherit inputs outputs;};
-    users.orther = import ../../modules/home-manager/nixos.nix;
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users = {
+      orther = {
+        imports = [
+          ./../../modules/home-manager/base.nix
+        ];
+
+        programs.git = {
+          enable = true;
+          userName = "Brandon Orther";
+          userEmail = "brandon@orther.dev";
+          # Signing config remains the same if needed
+        };
+
+        programs.ssh = {
+          enable = true;
+          matchBlocks = {
+            "github.com" = {
+              hostname = "github.com";
+              identityFile = "~/.ssh/id_ed25519";
+              user = "git";
+            };
+          };
+        };
+      };
+    };
   };
 
-  system.stateVersion = "24.11";
+  networking = {
+    hostName = "vm";
+    useDHCP = false;
+    interfaces.enp1s0.useDHCP = true;
+    useNetworkd = true;
+  };
 }
