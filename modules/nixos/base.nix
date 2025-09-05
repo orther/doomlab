@@ -7,6 +7,7 @@
 }: {
   imports = [
     inputs.sops-nix.nixosModules.sops
+    inputs.impermanence.nixosModules.impermanence
 
     ./_packages.nix
     ./secrets-rotation.nix
@@ -32,7 +33,7 @@
     settings = {
       experimental-features = "nix-command flakes";
       auto-optimise-store = true;
-      
+
       # Configure binary caches for faster builds
       substituters = [
         "https://cache.nixos.org/"
@@ -46,35 +47,35 @@
         "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
         "nixpkgs-unfree.cachix.org-1:hqvoInulhbV4nJ9yJOEr+4wxhDV4xq2d1DK7S6Nqlt4="
       ];
-      
+
       # Build optimization settings
       builders-use-substitutes = true;
       max-jobs = "auto";  # Use all available CPU cores
       cores = 0;  # Use all available CPU cores per job
-      
+
       # Increase parallel downloads for faster cache fetching
       max-substitution-jobs = 16;
       http-connections = 25;
-      
+
       # Enable distributed builds if remote builders are available
       # builders = "@/etc/nix/machines";
-      
+
       # Trust binary caches from these users (for remote builds)
       trusted-users = [ "root" "@wheel" ];
     };
-    
+
     # Optimize build performance
     extraOptions = ''
       # Keep build dependencies for faster rebuilds
       keep-outputs = true
       keep-derivations = true
-      
+
       # Enable parallel building
       build-cores = 0
-      
+
       # Increase timeout for large builds
       stalled-download-timeout = 300
-      
+
       # Enable compression for network transfers
       compress-build-log = true
     '';
@@ -124,7 +125,7 @@
   systemd.services.systemd-networkd-wait-online.enable = lib.mkDefault false;
 
   programs.zsh.enable = true;
-  
+
   # Implement granular sudo rules instead of passwordless access
   security.sudo = {
     wheelNeedsPassword = true;  # Require passwords by default
@@ -142,10 +143,10 @@
       ];
     }];
   };
-  
+
   # Enable resource limits and monitoring
   services.resource-limits.enable = true;
-  
+
   time.timeZone = "America/Los_Angeles";
   zramSwap.enable = true;
 
