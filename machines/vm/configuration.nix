@@ -26,6 +26,12 @@
     ];
   };
 
+  # Enable root user with password for VM management
+  users.users.root = {
+    # Set this to your password hash generated with: mkpasswd -m sha-512
+    hashedPassword = "$6$rounds=4096$6$FvLcGQCKcw9urvyq$Dzy29Kx7oklZV75QwWGgSpdqzQ74xgBi1mGAGB.WylKS1ogRSLrqNEMc0O.dYBp8SGp7IlddtV6WIklBMrMz61";
+  };
+
   # SSH configuration
   services.openssh = {
     enable = true;
