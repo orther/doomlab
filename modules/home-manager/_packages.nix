@@ -39,7 +39,7 @@
       # Below packages are for development and therefore excluded from servers
       # inspo: https://discourse.nixos.org/t/how-to-use-hostname-in-a-path/42612/3
       ++ (
-        if builtins.substring 0 3 osConfig.networking.hostName != "svr"
+        if builtins.substring 0 3 osConfig.networking.hostName != "svr" && builtins.substring 0 2 osConfig.networking.hostName != "vm"
         then [
           alejandra
           bun
