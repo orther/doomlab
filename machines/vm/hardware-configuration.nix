@@ -8,16 +8,22 @@
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "sr_mod" ];
   boot.initrd.kernelModules = [ ];
+  
+  # LUKS encryption setup
+  boot.initrd.luks.devices."root" = {
+    device = "/dev/disk/by-uuid/706ca26b-e067-42a8-8595-49ac43931da0";
+    allowDiscards = true;
+  };
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/e2e599cb-bc05-4f55-9b94-c076fc84196c";
+    { device = "/dev/disk/by-uuid/79073eac-c19c-4c19-88b4-ddcff4e76c69";
       fsType = "ext4";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/1258-1E2E";
+    { device = "/dev/disk/by-uuid/1D67-A8D3";
       fsType = "vfat";
       options = [ "fmask=0022" "dmask=0022" ];
     };
