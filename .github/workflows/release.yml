@@ -4,6 +4,8 @@ on:
     tags:
       - v*
   workflow_dispatch: null
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
