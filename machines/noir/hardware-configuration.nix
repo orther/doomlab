@@ -16,7 +16,7 @@
         reusePassphrases = true;
         devices = {
           "cryptroot" = {
-            device = "/dev/sda2";
+            device = "/dev/nvme0n1p2";
             allowDiscards = true;
           };
         };
