@@ -9,9 +9,12 @@
   ];
 
   boot = {
+    kernelModules = [ "kvm-intel" ];
+    extraModulePackages = [ ];
     initrd = {
-      # `readlink /sys/class/net/eno1/device/driver` indicates "igc" is the ethernet driver for this device
-      availableKernelModules = ["nvme" "xhci_pci" "ahci" "usb_storage" "sd_mod" "igc"];
+      # `readlink /sys/class/net/enp2s0/device/driver` indicates "igc" is the ethernet driver for this device
+      availableKernelModules = ["xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" "igc"];
+      kernelModules = [ ];
       luks = {
         reusePassphrases = true;
         devices = {
