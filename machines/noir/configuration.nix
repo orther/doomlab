@@ -62,7 +62,7 @@
 
   # Disable problematic wait services during NetworkManager -> systemd-networkd transition
   systemd.services = {
-    "NetworkManager-wait-online".enable = false;
-    "systemd-networkd-wait-online".enable = false;
+    "NetworkManager-wait-online".enable = lib.mkForce false;
+    "systemd-networkd-wait-online".enable = lib.mkForce false;
   };
 }
