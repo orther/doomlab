@@ -58,4 +58,10 @@
     useNetworkd = true;
     networkmanager.enable = false; # Disable NetworkManager when using systemd-networkd
   };
+
+  # Disable problematic wait services during NetworkManager -> systemd-networkd transition
+  systemd.services = {
+    "NetworkManager-wait-online".enable = false;
+    "systemd-networkd-wait-online".enable = false;
+  };
 }
