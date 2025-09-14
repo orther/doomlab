@@ -1,6 +1,7 @@
 {
   inputs,
   outputs,
+  lib,
   ...
 }: {
   imports = [
@@ -56,7 +57,7 @@
     useDHCP = false;
     interfaces.enp2s0.useDHCP = true;
     useNetworkd = true;
-    networkmanager.enable = false; # Disable NetworkManager when using systemd-networkd
+    networkmanager.enable = lib.mkForce false; # Override base.nix NetworkManager setting
   };
 
   # Disable problematic wait services during NetworkManager -> systemd-networkd transition
