@@ -56,5 +56,6 @@
     useDHCP = false;
     interfaces.enp2s0.useDHCP = true;
     useNetworkd = true;
+    networkmanager.enable = false; # Disable NetworkManager when using systemd-networkd
   };
 }
