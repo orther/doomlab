@@ -3,16 +3,16 @@
     "brew-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786945682,
-        "narHash": "sha256-VBESSoJccikdhxh3vp3SQeG7cZXTOulMvVkoSqNDEhs=",
+        "lastModified": 1787796349,
+        "narHash": "sha256-5s+MJAFyemD6lvrtL2c0jQ7P/XChdx1MPXzoCaQY+ic=",
         "owner": "Homebrew",
         "repo": "brew",
-        "rev": "5b90e281d4e0c8fbd6ca4d8358276fb305b8d0bd",
+        "rev": "3e3da86e4eaccd23f4ce43df9b0a31b16c707347",
         "type": "github"
       },
       "original": {
         "owner": "Homebrew",
-        "ref": "6.0.18",
+        "ref": "6.0.20",
         "repo": "brew",
         "type": "github"
       }
@@ -94,11 +94,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1788357902,
-        "narHash": "sha256-f7iE6vPgo2DjIF6+mzgvcBrUqRyJfJLROu0RglA4f/w=",
+        "lastModified": 1788444229,
+        "narHash": "sha256-yh38A0/WO0Z12R1RrvkQ52CRoYgZKHZGXCP7NsuzC2E=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "e782a7c94a6232e526a4d6538e407605b2858112",
+        "rev": "231d6fa6a2ed1b447a2ef0820e29efba628bd806",
         "type": "github"
       },
       "original": {
@@ -110,11 +110,11 @@
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1788354478,
-        "narHash": "sha256-QlFc1Ctl2qGd6DcZgR1PXwLsdGFhILNlEMXL39QD4UU=",
+        "lastModified": 1788444040,
+        "narHash": "sha256-Nwvj0lqKR7c6fLVTLn1NFh3DhoUE7JiZnvhYgPaWSes=",
         "owner": "homebrew",
         "repo": "homebrew-core",
-        "rev": "0da385ddd2d707c46a53e5f1add57083ec4e904e",
+        "rev": "00183a2fd68744717ad797e256bf3eba0e566964",
         "type": "github"
       },
       "original": {
@@ -168,11 +168,11 @@
         "brew-src": "brew-src"
       },
       "locked": {
-        "lastModified": 1787330919,
-        "narHash": "sha256-LslMncqN7uOOH5S88WZtO/EVt2HwD8ltUnfyANk+mC0=",
+        "lastModified": 1788444135,
+        "narHash": "sha256-ChwTDZPvTmEgZdS30dUfgdXlzAPtZAUWwEH/PfDXZmg=",
         "owner": "zhaofengli-wip",
         "repo": "nix-homebrew",
-        "rev": "b00218e4aec0e5bf07d61a0bb13f842faa582d7b",
+        "rev": "ec8417a617de4d3c739aed40837e308ebd667165",
         "type": "github"
       },
       "original": {
